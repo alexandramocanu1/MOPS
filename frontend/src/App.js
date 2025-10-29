@@ -1,28 +1,29 @@
-import { useState, useEffect } from 'react'
-import './App.css'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import './App.css';
+
+import Home from './pages/Home';
+import Login from './pages/Login';
+import Register from './pages/Register';
+
 
 function App() {
-  const [message, setMessage] = useState('Loading...');
-
-  useEffect(() => {
-    // Fetch data from backend
-    fetch('/api/hello')
-      .then(response => response.text())
-      .then(data => setMessage(data))
-      .catch(error => {
-        console.error('Error:', error);
-        setMessage('Error connecting to backend');
-      });
-  }, []);
-
   return (
-    <div className="App">
-      <header className="App-header">
-        <h1>MOPS Project</h1>
-        <p>Message from Backend: <strong>{message}</strong></p>
-      </header>
-    </div>
-  )
+    <AuthProvider>
+      <Router>
+        <div className="App">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+
+
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </div>
+      </Router>
+    </AuthProvider>
+  );
 }
 
-export default App
+export default App;

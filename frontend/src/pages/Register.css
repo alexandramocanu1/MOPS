@@ -1,0 +1,132 @@
+.register-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f5f5f5;
+  padding: 20px;
+}
+
+.register-form-card {
+  background-color: white;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  width: 100%;
+  max-width: 600px;
+}
+
+.register-title {
+  text-align: center;
+  color: #333;
+  margin-bottom: 30px;
+}
+
+.register-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.register-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.register-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.register-label {
+  font-weight: 500;
+  color: #555;
+}
+
+.register-input,
+.register-select {
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
+  transition: border-color 0.2s;
+}
+
+.register-input:focus,
+.register-select:focus {
+  outline: none;
+  border-color: #4CAF50;
+}
+
+.register-select {
+  background-color: white;
+  cursor: pointer;
+}
+
+.register-button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 12px;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background-color 0.2s;
+}
+
+.register-button:hover {
+  background-color: #45a049;
+}
+
+.register-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.register-error {
+  background-color: #ffebee;
+  color: #c62828;
+  padding: 12px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.register-login-link {
+  text-align: center;
+  margin-top: 20px;
+  color: #666;
+}
+
+.register-link {
+  color: #4CAF50;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.register-link:hover {
+  text-decoration: underline;
+}
+
+.register-back-link {
+  display: block;
+  text-align: center;
+  margin-top: 20px;
+  color: #4CAF50;
+  text-decoration: none;
+}
+
+.register-back-link:hover {
+  text-decoration: underline;
+}
+
+
+@media (max-width: 600px) {
+  .register-row {
+    grid-template-columns: 1fr;
+  }
+}
