@@ -31,7 +31,7 @@ function Login() {
         login(userData);
         
         if (userData.role === 'PATIENT') {
-          navigate('/patient/dashboard');
+          navigate('/');
         } else if (userData.role === 'DOCTOR') {
           navigate('/doctor/dashboard');
         } else if (userData.role === 'ADMIN') {
@@ -94,7 +94,7 @@ function Login() {
           Nu ai cont? <Link to="/register" className="login-link">Înregistrează-te</Link>
         </p>
         
-        <Link to="/" className="login-back-link">← Înapoi la Home</Link>
+        <Link to="/" className="login-back-link">Înapoi la Home</Link>
       </div>
     </div>
   );

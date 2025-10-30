@@ -206,7 +206,7 @@ function Register() {
           Ai deja cont? <Link to="/login" className="register-link">Login</Link>
         </p>
         
-        <Link to="/" className="register-back-link">← Înapoi la Home</Link>
+        <Link to="/" className="register-back-link"> Înapoi la Home</Link>
       </div>
     </div>
   );
