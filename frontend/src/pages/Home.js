@@ -1,9 +1,10 @@
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './Home.css';
 
 function Home() {
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <div className="home-container">
@@ -13,42 +14,33 @@ function Home() {
           Sistem modern de gestionare a programărilor medicale online
         </p>
 
-        {!isAuthenticated() ? (
-          <div className="home-button-group">
-            <Link to="/login" className="home-primary-button">
-              Login
-            </Link>
-            <Link to="/register" className="home-secondary-button">
-              Înregistrare
-            </Link>
-          </div>
-        ) : (
-          <div className="home-button-group">
-            <Link
-              to={
-                user.role === 'PATIENT'
-                  ? '/patient/dashboard'
-                  : user.role === 'DOCTOR'
-                  ? '/doctor/dashboard'
-                  : '/admin/dashboard'
-              }
-              className="home-primary-button"
-            >
-              Dashboard
-            </Link>
-          </div>
-        )}
       </div>
 
       <div className="home-features">
-        <div className="home-feature">
+        <div 
+          className="home-feature clickable" 
+          onClick={() => navigate('/appointments')}
+          role="button"
+          tabIndex={0}
+          onKeyPress={(e) => e.key === 'Enter' && navigate('/appointments')}
+        >
           <h3>Programări Online</h3>
           <p>Faceți programări rapid și ușor din confortul casei</p>
+          
         </div>
-        <div className="home-feature">
+        
+        <div 
+          className="home-feature clickable" 
+          onClick={() => navigate('/doctors')}
+          role="button"
+          tabIndex={0}
+          onKeyPress={(e) => e.key === 'Enter' && navigate('/doctors')}
+        >
           <h3>Doctori Calificați</h3>
           <p>Alegeți din lista noastră de medici experimentați</p>
+          
         </div>
+        
         <div className="home-feature">
           <h3>Gestionare Eficientă</h3>
           <p>Vizualizați și gestionați toate programările într-un singur loc</p>
