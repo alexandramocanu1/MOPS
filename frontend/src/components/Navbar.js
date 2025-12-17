@@ -120,7 +120,7 @@ function Navbar() {
           to="/admin/reports" 
           className={`navbar-link ${location.pathname === '/admin/reports' ? 'active' : ''}`}
         >
-          Rapoarte
+          Reports
         </Link>
       </div>
 
