@@ -303,7 +303,12 @@ function OnlineAppoinment() {
                                                 onClick={() => setSelectedDoctor(doctor)}
                                             >
                                                 <div className="doctor-icon">👨‍⚕️</div>
-                                                <h3>{doctor.user?.name}</h3>
+                                                <h3>
+                                                    {doctor.user?.fullName ||
+                                                     (doctor.user?.firstName && doctor.user?.lastName
+                                                        ? `${doctor.user.firstName} ${doctor.user.lastName}`
+                                                        : 'N/A')}
+                                                </h3>
                                                 <p className="doctor-specialty">{doctor.specialty?.name}</p>
                                                 <p className="doctor-experience">{doctor.experienceYears} years experience</p>
                                                 <div className="doctor-rating">
@@ -411,7 +416,12 @@ function OnlineAppoinment() {
                                             <div className="appointment-info">
                                                 <div className="info-row">
                                                     <span className="info-label">Doctor:</span>
-                                                    <span className="info-value">{appointment.doctor?.user?.name}</span>
+                                                    <span className="info-value">
+                                                        {appointment.doctor?.user?.fullName ||
+                                                         (appointment.doctor?.user?.firstName && appointment.doctor?.user?.lastName
+                                                            ? `${appointment.doctor.user.firstName} ${appointment.doctor.user.lastName}`
+                                                            : 'N/A')}
+                                                    </span>
                                                 </div>
                                                 <div className="info-row">
                                                     <span className="info-label">Specialty:</span>

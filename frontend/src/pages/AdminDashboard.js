@@ -26,6 +26,18 @@ function AdminDashboard() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [activeTab, setActiveTab] = useState('overview');
+    const [showDoctorForm, setShowDoctorForm] = useState(false);
+    const [editingDoctor, setEditingDoctor] = useState(null);
+    const [doctorForm, setDoctorForm] = useState({
+        firstName: '',
+        lastName: '',
+        email: '',
+        password: '',
+        phoneNumber: '',
+        specialtyId: '',
+        experienceYears: '',
+        description: ''
+    });
 
     useEffect(() => {
         if (user?.role !== 'ADMIN') {
@@ -126,6 +138,174 @@ function AdminDashboard() {
         } catch (err) {
             console.error('Error deleting doctor:', err);
             alert('Error deleting doctor');
+        }
+    };
+
+    const handleAddDoctor = () => {
+        setEditingDoctor(null);
+        setDoctorForm({
+            firstName: '',
+            lastName: '',
+            email: '',
+            password: '',
+            phoneNumber: '',
+            specialtyId: '',
+            experienceYears: '',
+            description: ''
+        });
+        setShowDoctorForm(true);
+    };
+
+    const handleEditDoctor = (doctor) => {
+        setEditingDoctor(doctor);
+        setDoctorForm({
+            firstName: doctor.user?.firstName || '',
+            lastName: doctor.user?.lastName || '',
+            email: doctor.user?.email || '',
+            password: '',
+            phoneNumber: doctor.user?.phoneNumber || '',
+            specialtyId: doctor.specialty?.id || '',
+            experienceYears: doctor.experienceYears || '',
+            description: doctor.description || ''
+        });
+        setShowDoctorForm(true);
+    };
+
+    const handleCancelForm = () => {
+        setShowDoctorForm(false);
+        setEditingDoctor(null);
+        setDoctorForm({
+            firstName: '',
+            lastName: '',
+            email: '',
+            password: '',
+            phoneNumber: '',
+            specialtyId: '',
+            experienceYears: '',
+            description: ''
+        });
+    };
+
+    const handleFormChange = (e) => {
+        const { name, value } = e.target;
+        setDoctorForm(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleSubmitDoctor = async (e) => {
+        e.preventDefault();
+
+        try {
+            if (editingDoctor) {
+                // Update existing doctor
+                const userResponse = await fetch(`${API_BASE_URL}/users/${editingDoctor.user.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: doctorForm.email,
+                        password: doctorForm.password || editingDoctor.user.password,
+                        firstName: doctorForm.firstName,
+                        lastName: doctorForm.lastName,
+                        phoneNumber: doctorForm.phoneNumber,
+                        role: 'DOCTOR'
+                    })
+                });
+
+                if (!userResponse.ok) {
+                    alert('Failed to update user information');
+                    return;
+                }
+
+                const doctorResponse = await fetch(`${API_BASE_URL}/doctors/${editingDoctor.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user: { id: editingDoctor.user.id },
+                        specialty: { id: parseInt(doctorForm.specialtyId) },
+                        experienceYears: parseInt(doctorForm.experienceYears),
+                        description: doctorForm.description,
+                        isActive: editingDoctor.isActive,
+                        popularity: editingDoctor.popularity
+                    })
+                });
+
+                if (doctorResponse.ok) {
+                    alert('Doctor updated successfully');
+                    handleCancelForm();
+                    fetchDashboardData();
+                } else {
+                    alert('Failed to update doctor');
+                }
+            } else {
+                // Create new doctor
+                const userResponse = await fetch(`${API_BASE_URL}/users`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: doctorForm.email,
+                        password: doctorForm.password,
+                        firstName: doctorForm.firstName,
+                        lastName: doctorForm.lastName,
+                        phoneNumber: doctorForm.phoneNumber,
+                        role: 'DOCTOR'
+                    })
+                });
+
+                if (!userResponse.ok) {
+                    alert('Failed to create user');
+                    return;
+                }
+
+                const newUser = await userResponse.json();
+
+                const doctorResponse = await fetch(`${API_BASE_URL}/doctors`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user: { id: newUser.id },
+                        specialty: { id: parseInt(doctorForm.specialtyId) },
+                        experienceYears: parseInt(doctorForm.experienceYears),
+                        description: doctorForm.description,
+                        isActive: true,
+                        popularity: 0
+                    })
+                });
+
+                if (doctorResponse.ok) {
+                    alert('Doctor added successfully');
+                    handleCancelForm();
+                    fetchDashboardData();
+                } else {
+                    alert('Failed to create doctor');
+                }
+            }
+        } catch (err) {
+            console.error('Error saving doctor:', err);
+            alert('Error saving doctor');
+        }
+    };
+
+    const handleCancelAppointment = async (appointmentId) => {
+        if (!window.confirm('Are you sure you want to cancel this appointment?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/appointments/${appointmentId}/cancel`, {
+                method: 'PUT'
+            });
+
+            if (response.ok) {
+                alert('Appointment cancelled successfully');
+                fetchDashboardData();
+            } else {
+                alert('Failed to cancel appointment');
+            }
+        } catch (err) {
+            console.error('Error cancelling appointment:', err);
+            alert('Error cancelling appointment');
         }
     };
 
@@ -283,8 +463,149 @@ function AdminDashboard() {
                 <div className="tab-content">
                     <div className="section-header">
                         <h2>Doctors Management</h2>
-                        <p>Total: {doctors.length} doctors</p>
+                        <div className="header-actions">
+                            <p>Total: {doctors.length} doctors</p>
+                            <button onClick={handleAddDoctor} className="btn-add-doctor">
+                                + Add Doctor
+                            </button>
+                        </div>
                     </div>
+
+                    {showDoctorForm && (
+                        <div className="modal-overlay">
+                            <div className="modal-content">
+                                <div className="modal-header">
+                                    <h3>{editingDoctor ? 'Edit Doctor' : 'Add New Doctor'}</h3>
+                                    <button onClick={handleCancelForm} className="btn-close">×</button>
+                                </div>
+                                <form onSubmit={handleSubmitDoctor} className="doctor-form">
+                                    <div className="form-row">
+                                        <div className="form-group">
+                                            <label htmlFor="firstName">First Name *</label>
+                                            <input
+                                                type="text"
+                                                id="firstName"
+                                                name="firstName"
+                                                value={doctorForm.firstName}
+                                                onChange={handleFormChange}
+                                                required
+                                                className="form-input"
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <label htmlFor="lastName">Last Name *</label>
+                                            <input
+                                                type="text"
+                                                id="lastName"
+                                                name="lastName"
+                                                value={doctorForm.lastName}
+                                                onChange={handleFormChange}
+                                                required
+                                                className="form-input"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="form-row">
+                                        <div className="form-group">
+                                            <label htmlFor="email">Email *</label>
+                                            <input
+                                                type="email"
+                                                id="email"
+                                                name="email"
+                                                value={doctorForm.email}
+                                                onChange={handleFormChange}
+                                                required
+                                                className="form-input"
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <label htmlFor="phoneNumber">Phone Number *</label>
+                                            <input
+                                                type="tel"
+                                                id="phoneNumber"
+                                                name="phoneNumber"
+                                                value={doctorForm.phoneNumber}
+                                                onChange={handleFormChange}
+                                                required
+                                                className="form-input"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label htmlFor="password">Password {!editingDoctor && '*'}</label>
+                                        <input
+                                            type="password"
+                                            id="password"
+                                            name="password"
+                                            value={doctorForm.password}
+                                            onChange={handleFormChange}
+                                            required={!editingDoctor}
+                                            className="form-input"
+                                            placeholder={editingDoctor ? 'Leave blank to keep current password' : ''}
+                                        />
+                                    </div>
+
+                                    <div className="form-row">
+                                        <div className="form-group">
+                                            <label htmlFor="specialtyId">Specialty *</label>
+                                            <select
+                                                id="specialtyId"
+                                                name="specialtyId"
+                                                value={doctorForm.specialtyId}
+                                                onChange={handleFormChange}
+                                                required
+                                                className="form-input"
+                                            >
+                                                <option value="">Select Specialty</option>
+                                                {specialties.map(specialty => (
+                                                    <option key={specialty.id} value={specialty.id}>
+                                                        {specialty.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div className="form-group">
+                                            <label htmlFor="experienceYears">Experience (years) *</label>
+                                            <input
+                                                type="number"
+                                                id="experienceYears"
+                                                name="experienceYears"
+                                                value={doctorForm.experienceYears}
+                                                onChange={handleFormChange}
+                                                required
+                                                min="0"
+                                                className="form-input"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label htmlFor="description">Description</label>
+                                        <textarea
+                                            id="description"
+                                            name="description"
+                                            value={doctorForm.description}
+                                            onChange={handleFormChange}
+                                            rows="4"
+                                            className="form-input"
+                                            placeholder="Enter doctor's description, qualifications, etc."
+                                        />
+                                    </div>
+
+                                    <div className="form-actions">
+                                        <button type="button" onClick={handleCancelForm} className="btn-cancel">
+                                            Cancel
+                                        </button>
+                                        <button type="submit" className="btn-submit">
+                                            {editingDoctor ? 'Update Doctor' : 'Add Doctor'}
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    )}
 
                     <div className="doctors-table-container">
                         <table className="data-table">
@@ -304,7 +625,12 @@ function AdminDashboard() {
                                 {doctors.map(doctor => (
                                     <tr key={doctor.id}>
                                         <td>{doctor.id}</td>
-                                        <td>{doctor.user?.name || 'N/A'}</td>
+                                        <td>
+                                            {doctor.user?.fullName ||
+                                             (doctor.user?.firstName && doctor.user?.lastName
+                                                ? `${doctor.user.firstName} ${doctor.user.lastName}`
+                                                : 'N/A')}
+                                        </td>
                                         <td>{doctor.user?.email || 'N/A'}</td>
                                         <td>{doctor.specialty?.name || 'N/A'}</td>
                                         <td>{doctor.experienceYears} years</td>
@@ -316,6 +642,13 @@ function AdminDashboard() {
                                         </td>
                                         <td>
                                             <div className="action-buttons">
+                                                <button
+                                                    onClick={() => handleEditDoctor(doctor)}
+                                                    className="btn-edit"
+                                                    title="Edit"
+                                                >
+                                                    ✏️
+                                                </button>
                                                 <button
                                                     onClick={() => handleToggleDoctorStatus(doctor.id)}
                                                     className="btn-toggle"
@@ -357,14 +690,25 @@ function AdminDashboard() {
                                     <th>Date & Time</th>
                                     <th>Status</th>
                                     <th>Notes</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {recentAppointments.map(appointment => (
                                     <tr key={appointment.id}>
                                         <td>{appointment.id}</td>
-                                        <td>{appointment.patient?.name || 'N/A'}</td>
-                                        <td>{appointment.doctor?.user?.name || 'N/A'}</td>
+                                        <td>
+                                            {appointment.patient?.fullName ||
+                                             (appointment.patient?.firstName && appointment.patient?.lastName
+                                                ? `${appointment.patient.firstName} ${appointment.patient.lastName}`
+                                                : 'N/A')}
+                                        </td>
+                                        <td>
+                                            {appointment.doctor?.user?.fullName ||
+                                             (appointment.doctor?.user?.firstName && appointment.doctor?.user?.lastName
+                                                ? `${appointment.doctor.user.firstName} ${appointment.doctor.user.lastName}`
+                                                : 'N/A')}
+                                        </td>
                                         <td>{formatDateTime(appointment.appointmentDate)}</td>
                                         <td>
                                             <span className={`status-badge ${getStatusBadgeClass(appointment.status)}`}>
@@ -372,6 +716,17 @@ function AdminDashboard() {
                                             </span>
                                         </td>
                                         <td className="notes-cell">{appointment.notes || '-'}</td>
+                                        <td>
+                                            {(appointment.status === 'PENDING' || appointment.status === 'CONFIRMED') && (
+                                                <button
+                                                    onClick={() => handleCancelAppointment(appointment.id)}
+                                                    className="btn-cancel-appointment"
+                                                    title="Cancel Appointment"
+                                                >
+                                                    Cancel
+                                                </button>
+                                            )}
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>
