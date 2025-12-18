@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import DoctorForm from '../components/DoctorForm';
+import AvailabilityForm from '../components/AvailabilityForm';
 import './AdminDashboard.css';
 
 const API_BASE_URL = 'http://localhost:7000/api';
@@ -27,17 +29,9 @@ function AdminDashboard() {
     const [error, setError] = useState(null);
     const [activeTab, setActiveTab] = useState('overview');
     const [showDoctorForm, setShowDoctorForm] = useState(false);
+    const [showAvailabilityForm, setShowAvailabilityForm] = useState(false);
     const [editingDoctor, setEditingDoctor] = useState(null);
-    const [doctorForm, setDoctorForm] = useState({
-        firstName: '',
-        lastName: '',
-        email: '',
-        password: '',
-        phoneNumber: '',
-        specialtyId: '',
-        experienceYears: '',
-        description: ''
-    });
+    const [selectedDoctorForAvailability, setSelectedDoctorForAvailability] = useState(null);
 
     useEffect(() => {
         if (user?.role !== 'ADMIN') {
@@ -72,6 +66,13 @@ function AdminDashboard() {
                 fetch(`${API_BASE_URL}/specialties`)
             ]);
 
+            if (!patientsRes.ok || !doctorsRes.ok || !activeDoctorsRes.ok || 
+                !appointmentsRes.ok || !pendingAppointmentsRes.ok || 
+                !confirmedAppointmentsRes.ok || !completedAppointmentsRes.ok || 
+                !specialtiesRes.ok) {
+                throw new Error('Failed to fetch some data');
+            }
+
             const patients = await patientsRes.json();
             const doctorsData = await doctorsRes.json();
             const activeDoctorsData = await activeDoctorsRes.json();
@@ -82,14 +83,14 @@ function AdminDashboard() {
             const specialtiesData = await specialtiesRes.json();
 
             setStats({
-                totalPatients: patients.length,
-                totalDoctors: doctorsData.length,
-                activeDoctors: activeDoctorsData.length,
-                totalAppointments: appointments.length,
-                pendingAppointments: pendingAppointments.length,
-                confirmedAppointments: confirmedAppointments.length,
-                completedAppointments: completedAppointments.length,
-                totalSpecialties: specialtiesData.length
+                totalPatients: patients.length || 0,
+                totalDoctors: doctorsData.length || 0,
+                activeDoctors: activeDoctorsData.length || 0,
+                totalAppointments: appointments.length || 0,
+                pendingAppointments: pendingAppointments.length || 0,
+                confirmedAppointments: confirmedAppointments.length || 0,
+                completedAppointments: completedAppointments.length || 0,
+                totalSpecialties: specialtiesData.length || 0
             });
 
             setRecentAppointments(appointments.slice(0, 10));
@@ -143,148 +144,28 @@ function AdminDashboard() {
 
     const handleAddDoctor = () => {
         setEditingDoctor(null);
-        setDoctorForm({
-            firstName: '',
-            lastName: '',
-            email: '',
-            password: '',
-            phoneNumber: '',
-            specialtyId: '',
-            experienceYears: '',
-            description: ''
-        });
         setShowDoctorForm(true);
     };
 
     const handleEditDoctor = (doctor) => {
         setEditingDoctor(doctor);
-        setDoctorForm({
-            firstName: doctor.user?.firstName || '',
-            lastName: doctor.user?.lastName || '',
-            email: doctor.user?.email || '',
-            password: '',
-            phoneNumber: doctor.user?.phoneNumber || '',
-            specialtyId: doctor.specialty?.id || '',
-            experienceYears: doctor.experienceYears || '',
-            description: doctor.description || ''
-        });
         setShowDoctorForm(true);
     };
 
-    const handleCancelForm = () => {
+    const handleSetAvailability = (doctor) => {
+        setSelectedDoctorForAvailability(doctor);
+        setShowAvailabilityForm(true);
+    };
+
+    const handleDoctorFormSuccess = () => {
         setShowDoctorForm(false);
         setEditingDoctor(null);
-        setDoctorForm({
-            firstName: '',
-            lastName: '',
-            email: '',
-            password: '',
-            phoneNumber: '',
-            specialtyId: '',
-            experienceYears: '',
-            description: ''
-        });
+        fetchDashboardData();
     };
 
-    const handleFormChange = (e) => {
-        const { name, value } = e.target;
-        setDoctorForm(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
-
-    const handleSubmitDoctor = async (e) => {
-        e.preventDefault();
-
-        try {
-            if (editingDoctor) {
-                // Update existing doctor
-                const userResponse = await fetch(`${API_BASE_URL}/users/${editingDoctor.user.id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        email: doctorForm.email,
-                        password: doctorForm.password || editingDoctor.user.password,
-                        firstName: doctorForm.firstName,
-                        lastName: doctorForm.lastName,
-                        phoneNumber: doctorForm.phoneNumber,
-                        role: 'DOCTOR'
-                    })
-                });
-
-                if (!userResponse.ok) {
-                    alert('Failed to update user information');
-                    return;
-                }
-
-                const doctorResponse = await fetch(`${API_BASE_URL}/doctors/${editingDoctor.id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        user: { id: editingDoctor.user.id },
-                        specialty: { id: parseInt(doctorForm.specialtyId) },
-                        experienceYears: parseInt(doctorForm.experienceYears),
-                        description: doctorForm.description,
-                        isActive: editingDoctor.isActive,
-                        popularity: editingDoctor.popularity
-                    })
-                });
-
-                if (doctorResponse.ok) {
-                    alert('Doctor updated successfully');
-                    handleCancelForm();
-                    fetchDashboardData();
-                } else {
-                    alert('Failed to update doctor');
-                }
-            } else {
-                // Create new doctor
-                const userResponse = await fetch(`${API_BASE_URL}/users`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        email: doctorForm.email,
-                        password: doctorForm.password,
-                        firstName: doctorForm.firstName,
-                        lastName: doctorForm.lastName,
-                        phoneNumber: doctorForm.phoneNumber,
-                        role: 'DOCTOR'
-                    })
-                });
-
-                if (!userResponse.ok) {
-                    alert('Failed to create user');
-                    return;
-                }
-
-                const newUser = await userResponse.json();
-
-                const doctorResponse = await fetch(`${API_BASE_URL}/doctors`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        user: { id: newUser.id },
-                        specialty: { id: parseInt(doctorForm.specialtyId) },
-                        experienceYears: parseInt(doctorForm.experienceYears),
-                        description: doctorForm.description,
-                        isActive: true,
-                        popularity: 0
-                    })
-                });
-
-                if (doctorResponse.ok) {
-                    alert('Doctor added successfully');
-                    handleCancelForm();
-                    fetchDashboardData();
-                } else {
-                    alert('Failed to create doctor');
-                }
-            }
-        } catch (err) {
-            console.error('Error saving doctor:', err);
-            alert('Error saving doctor');
-        }
+    const handleAvailabilityFormSuccess = () => {
+        setShowAvailabilityForm(false);
+        setSelectedDoctorForAvailability(null);
     };
 
     const handleCancelAppointment = async (appointmentId) => {
@@ -387,7 +268,6 @@ function AdminDashboard() {
                 <div className="tab-content">
                     <div className="stats-grid">
                         <div className="stat-card stat-primary">
-                            <div className="stat-icon">👥</div>
                             <div className="stat-info">
                                 <h3>Total Patients</h3>
                                 <p className="stat-number">{stats.totalPatients}</p>
@@ -395,7 +275,6 @@ function AdminDashboard() {
                         </div>
 
                         <div className="stat-card stat-success">
-                            <div className="stat-icon">⚕️</div>
                             <div className="stat-info">
                                 <h3>Active Doctors</h3>
                                 <p className="stat-number">{stats.activeDoctors} / {stats.totalDoctors}</p>
@@ -403,7 +282,6 @@ function AdminDashboard() {
                         </div>
 
                         <div className="stat-card stat-warning">
-                            <div className="stat-icon">📅</div>
                             <div className="stat-info">
                                 <h3>Pending Appointments</h3>
                                 <p className="stat-number">{stats.pendingAppointments}</p>
@@ -411,7 +289,6 @@ function AdminDashboard() {
                         </div>
 
                         <div className="stat-card stat-info">
-                            <div className="stat-icon">✅</div>
                             <div className="stat-info">
                                 <h3>Confirmed Appointments</h3>
                                 <p className="stat-number">{stats.confirmedAppointments}</p>
@@ -419,7 +296,6 @@ function AdminDashboard() {
                         </div>
 
                         <div className="stat-card stat-completed">
-                            <div className="stat-icon">✓</div>
                             <div className="stat-info">
                                 <h3>Completed Appointments</h3>
                                 <p className="stat-number">{stats.completedAppointments}</p>
@@ -427,33 +303,10 @@ function AdminDashboard() {
                         </div>
 
                         <div className="stat-card stat-secondary">
-                            <div className="stat-icon">🏥</div>
                             <div className="stat-info">
                                 <h3>Specialties</h3>
                                 <p className="stat-number">{stats.totalSpecialties}</p>
                             </div>
-                        </div>
-                    </div>
-
-                    <div className="quick-actions">
-                        <h2>Quick Actions</h2>
-                        <div className="actions-grid">
-                            <Link to="/admin/reports" className="action-card">
-                                <span className="action-icon">📊</span>
-                                <span>View Reports</span>
-                            </Link>
-                            <button onClick={() => setActiveTab('doctors')} className="action-card">
-                                <span className="action-icon">👨‍⚕️</span>
-                                <span>Manage Doctors</span>
-                            </button>
-                            <button onClick={() => setActiveTab('appointments')} className="action-card">
-                                <span className="action-icon">📋</span>
-                                <span>View Appointments</span>
-                            </button>
-                            <button onClick={fetchDashboardData} className="action-card">
-                                <span className="action-icon">🔄</span>
-                                <span>Refresh Data</span>
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -472,139 +325,20 @@ function AdminDashboard() {
                     </div>
 
                     {showDoctorForm && (
-                        <div className="modal-overlay">
-                            <div className="modal-content">
-                                <div className="modal-header">
-                                    <h3>{editingDoctor ? 'Edit Doctor' : 'Add New Doctor'}</h3>
-                                    <button onClick={handleCancelForm} className="btn-close">×</button>
-                                </div>
-                                <form onSubmit={handleSubmitDoctor} className="doctor-form">
-                                    <div className="form-row">
-                                        <div className="form-group">
-                                            <label htmlFor="firstName">First Name *</label>
-                                            <input
-                                                type="text"
-                                                id="firstName"
-                                                name="firstName"
-                                                value={doctorForm.firstName}
-                                                onChange={handleFormChange}
-                                                required
-                                                className="form-input"
-                                            />
-                                        </div>
-                                        <div className="form-group">
-                                            <label htmlFor="lastName">Last Name *</label>
-                                            <input
-                                                type="text"
-                                                id="lastName"
-                                                name="lastName"
-                                                value={doctorForm.lastName}
-                                                onChange={handleFormChange}
-                                                required
-                                                className="form-input"
-                                            />
-                                        </div>
-                                    </div>
+                        <DoctorForm
+                            editingDoctor={editingDoctor}
+                            specialties={specialties}
+                            onCancel={() => setShowDoctorForm(false)}
+                            onSuccess={handleDoctorFormSuccess}
+                        />
+                    )}
 
-                                    <div className="form-row">
-                                        <div className="form-group">
-                                            <label htmlFor="email">Email *</label>
-                                            <input
-                                                type="email"
-                                                id="email"
-                                                name="email"
-                                                value={doctorForm.email}
-                                                onChange={handleFormChange}
-                                                required
-                                                className="form-input"
-                                            />
-                                        </div>
-                                        <div className="form-group">
-                                            <label htmlFor="phoneNumber">Phone Number *</label>
-                                            <input
-                                                type="tel"
-                                                id="phoneNumber"
-                                                name="phoneNumber"
-                                                value={doctorForm.phoneNumber}
-                                                onChange={handleFormChange}
-                                                required
-                                                className="form-input"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="form-group">
-                                        <label htmlFor="password">Password {!editingDoctor && '*'}</label>
-                                        <input
-                                            type="password"
-                                            id="password"
-                                            name="password"
-                                            value={doctorForm.password}
-                                            onChange={handleFormChange}
-                                            required={!editingDoctor}
-                                            className="form-input"
-                                            placeholder={editingDoctor ? 'Leave blank to keep current password' : ''}
-                                        />
-                                    </div>
-
-                                    <div className="form-row">
-                                        <div className="form-group">
-                                            <label htmlFor="specialtyId">Specialty *</label>
-                                            <select
-                                                id="specialtyId"
-                                                name="specialtyId"
-                                                value={doctorForm.specialtyId}
-                                                onChange={handleFormChange}
-                                                required
-                                                className="form-input"
-                                            >
-                                                <option value="">Select Specialty</option>
-                                                {specialties.map(specialty => (
-                                                    <option key={specialty.id} value={specialty.id}>
-                                                        {specialty.name}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                        <div className="form-group">
-                                            <label htmlFor="experienceYears">Experience (years) *</label>
-                                            <input
-                                                type="number"
-                                                id="experienceYears"
-                                                name="experienceYears"
-                                                value={doctorForm.experienceYears}
-                                                onChange={handleFormChange}
-                                                required
-                                                min="0"
-                                                className="form-input"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="form-group">
-                                        <label htmlFor="description">Description</label>
-                                        <textarea
-                                            id="description"
-                                            name="description"
-                                            value={doctorForm.description}
-                                            onChange={handleFormChange}
-                                            rows="4"
-                                            className="form-input"
-                                            placeholder="Enter doctor's description, qualifications, etc."
-                                        />
-                                    </div>
-
-                                    <div className="form-actions">
-                                        <button type="button" onClick={handleCancelForm} className="btn-cancel">
-                                            Cancel
-                                        </button>
-                                        <button type="submit" className="btn-submit">
-                                            {editingDoctor ? 'Update Doctor' : 'Add Doctor'}
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
+                    {showAvailabilityForm && selectedDoctorForAvailability && (
+                        <AvailabilityForm
+                            doctor={selectedDoctorForAvailability}
+                            onCancel={() => setShowAvailabilityForm(false)}
+                            onSuccess={handleAvailabilityFormSuccess}
+                        />
                     )}
 
                     <div className="doctors-table-container">
@@ -648,6 +382,13 @@ function AdminDashboard() {
                                                     title="Edit"
                                                 >
                                                     ✏️
+                                                </button>
+                                                <button
+                                                    onClick={() => handleSetAvailability(doctor)}
+                                                    className="btn-availability"
+                                                    title="Set Availability"
+                                                >
+                                                    📅
                                                 </button>
                                                 <button
                                                     onClick={() => handleToggleDoctorStatus(doctor.id)}

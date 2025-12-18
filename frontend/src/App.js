@@ -13,6 +13,7 @@ import DoctorDashboard from './pages/DoctorDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import Navbar from './components/Navbar';
 import ReportsPage from './pages/ReportsPage';
+import PaymentPage from './pages/PaymentPage';
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
             <Route path = "/doctor/dashboard" element={<DoctorDashboard />} />
             <Route path = "/admin/dashboard" element={<AdminDashboard />} />
             <Route path = "/admin/reports" element={<ReportsPage />} />
+            <Route path = "/payment" element={<PaymentPage />} />
  
 
             <Route path="*" element={<Navigate to="/" replace />} />
