@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './OnlineAppoinment.css';
 
@@ -9,7 +9,7 @@ function OnlineAppoinment() {
     const { user } = useAuth();
     const navigate = useNavigate();
 
-    const [activeView, setActiveView] = useState('book'); // 'book' or 'myappointments'
+    const [activeView, setActiveView] = useState('book'); 
     const [specialties, setSpecialties] = useState([]);
     const [doctors, setDoctors] = useState([]);
     const [filteredDoctors, setFilteredDoctors] = useState([]);
@@ -49,6 +49,8 @@ function OnlineAppoinment() {
     useEffect(() => {
         if (selectedDoctor) {
             fetchDoctorAvailability(selectedDoctor.id);
+        } else {
+            setAvailabilities([]);
         }
     }, [selectedDoctor]);
 
@@ -93,6 +95,7 @@ function OnlineAppoinment() {
         try {
             const response = await fetch(`${API_BASE_URL}/availability/doctor/${doctorId}`);
             const data = await response.json();
+            console.log('Doctor availabilities:', data);
             setAvailabilities(data);
         } catch (err) {
             console.error('Error fetching availability:', err);
@@ -104,7 +107,7 @@ function OnlineAppoinment() {
         e.preventDefault();
 
         if (!selectedDoctor || !selectedDate || !selectedTime) {
-            setError('Please fill in all required fields');
+            setError('Te rugăm să completezi toate câmpurile obligatorii'); 
             return;
         }
 
@@ -116,39 +119,33 @@ function OnlineAppoinment() {
 
             const response = await fetch(`${API_BASE_URL}/appointments`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     patient: { id: user.id },
                     doctor: { id: selectedDoctor.id },
                     appointmentDate: appointmentDateTime,
                     notes: notes || '',
-                    status: 'PENDING'
+                    status: 'CONFIRMED', 
+                    cost: 150
                 })
             });
 
             if (response.ok) {
-                setSuccess('Appointment booked successfully! Waiting for doctor confirmation.');
-                setSelectedDoctor(null);
-                setSelectedDate('');
-                setSelectedTime('');
-                setNotes('');
-                setSelectedSpecialty('');
-
-                if (user.role === 'PATIENT') {
-                    await fetchMyAppointments();
-                }
-
-                setTimeout(() => setSuccess(null), 5000);
+                const newAppointment = await response.json();
+                navigate('/payment', { 
+                    state: { 
+                        appointmentId: newAppointment.id,
+                        amount: 150,
+                        doctorName: selectedDoctor.user?.fullName || 
+                                   `${selectedDoctor.user?.firstName} ${selectedDoctor.user?.lastName}`
+                    } 
+                });
             } else {
-                setError('Failed to book appointment. Please try again.');
+                setError('Eroare la crearea programării.');
             }
-
-            setLoading(false);
         } catch (err) {
-            console.error('Error booking appointment:', err);
-            setError('Error booking appointment. Please try again.');
+            setError('Eroare de conexiune la server.');
+        } finally {
             setLoading(false);
         }
     };
@@ -205,23 +202,36 @@ function OnlineAppoinment() {
     };
 
     const getDayOfWeek = (dateString) => {
-        const date = new Date(dateString);
-        return date.getDay(); // Returns 0-6 (0 = Sunday, 6 = Saturday)
+        const date = new Date(dateString + 'T00:00:00');
+        return date.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
     };
 
     const getDayOfWeekName = (dayNumber) => {
-        const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         return days[dayNumber];
     };
 
     const getAvailableTimesForDate = () => {
-        if (!selectedDate || !availabilities.length) return [];
+        if (!selectedDate || !availabilities.length) {
+            console.log('No date selected or no availabilities');
+            return [];
+        }
 
-        const dayOfWeek = getDayOfWeek(selectedDate);
-        const dayAvailabilities = availabilities.filter(
-            a => parseInt(a.dayOfWeek) === dayOfWeek && a.isActive
-        );
+        const selectedDayOfWeek = getDayOfWeek(selectedDate);
+        console.log('Selected date:', selectedDate);
+        console.log('Day of week:', selectedDayOfWeek, getDayOfWeekName(selectedDayOfWeek));
+        console.log('All availabilities:', availabilities);
 
+        const dayAvailabilities = availabilities.filter(availability => {
+            const availabilityDay = parseInt(availability.dayOfWeek);
+            const isActive = availability.isActive;
+            
+            console.log(`Checking availability: day=${availabilityDay}, isActive=${isActive}, matches=${availabilityDay === selectedDayOfWeek}`);
+            
+            return availabilityDay === selectedDayOfWeek && isActive;
+        });
+
+        console.log('Filtered availabilities for selected day:', dayAvailabilities);
         return dayAvailabilities;
     };
 
@@ -322,63 +332,83 @@ function OnlineAppoinment() {
 
                             {selectedDoctor && (
                                 <>
-                                    <div className="form-group">
-                                        <label htmlFor="date">Select Date *</label>
-                                        <input
-                                            type="date"
-                                            id="date"
-                                            value={selectedDate}
-                                            onChange={(e) => setSelectedDate(e.target.value)}
-                                            min={getMinDate()}
-                                            className="form-control"
-                                            required
-                                        />
-                                    </div>
-
-                                    {selectedDate && (
-                                        <div className="form-group">
-                                            <label htmlFor="time">Select Time *</label>
-                                            {getAvailableTimesForDate().length > 0 ? (
-                                                <div className="time-slots">
-                                                    {getAvailableTimesForDate().map((availability, index) => (
-                                                        <button
-                                                            key={index}
-                                                            type="button"
-                                                            className={`time-slot ${selectedTime === availability.startTime ? 'selected' : ''}`}
-                                                            onClick={() => setSelectedTime(availability.startTime)}
-                                                        >
-                                                            {availability.startTime} - {availability.endTime}
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            ) : (
-                                                <p className="no-availability">
-                                                    No available time slots for {getDayOfWeekName(getDayOfWeek(selectedDate))}.
-                                                    Please select another date.
-                                                </p>
-                                            )}
+                                    {availabilities.length === 0 ? (
+                                        <div className="no-availability-warning">
+                                            <p style={{color: '#ff6b6b', padding: '15px', background: '#ffe0e0', borderRadius: '5px', marginTop: '20px'}}>
+                                                ⚠️ This doctor hasn't set their availability yet. Please select another doctor or contact the clinic administrator.
+                                            </p>
                                         </div>
+                                    ) : (
+                                        <>
+                                            <div className="form-group">
+                                                <label htmlFor="date">Select Date *</label>
+                                                <input
+                                                    type="date"
+                                                    id="date"
+                                                    value={selectedDate}
+                                                    onChange={(e) => {
+                                                        setSelectedDate(e.target.value);
+                                                        setSelectedTime('');
+                                                    }}
+                                                    min={getMinDate()}
+                                                    className="form-control"
+                                                    required
+                                                />
+                                            </div>
+
+                                            {selectedDate && (
+                                                <div className="form-group">
+                                                    <label htmlFor="time">Select Time *</label>
+                                                    {getAvailableTimesForDate().length > 0 ? (
+                                                        <div className="time-slots">
+                                                            {getAvailableTimesForDate().map((availability, index) => (
+                                                                <button
+                                                                    key={index}
+                                                                    type="button"
+                                                                    className={`time-slot ${selectedTime === availability.startTime ? 'selected' : ''}`}
+                                                                    onClick={() => setSelectedTime(availability.startTime)}
+                                                                >
+                                                                    {availability.startTime} - {availability.endTime}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    ) : (
+                                                        <div className="no-availability-info">
+                                                            <p className="no-availability">
+                                                                No available time slots for {getDayOfWeekName(getDayOfWeek(selectedDate))}.
+                                                                Please select another date.
+                                                            </p>
+                                                            <p className="debug-info" style={{fontSize: '12px', color: '#666', marginTop: '10px'}}>
+                                                                Debug: Selected day is {getDayOfWeek(selectedDate)} ({getDayOfWeekName(getDayOfWeek(selectedDate))})
+                                                                <br />
+                                                                Available days: {availabilities.filter(a => a.isActive).map(a => `${a.dayOfWeek} (${getDayOfWeekName(parseInt(a.dayOfWeek))})`).join(', ') || 'None'}
+                                                            </p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                            <div className="form-group">
+                                                <label htmlFor="notes">Additional Notes (Optional)</label>
+                                                <textarea
+                                                    id="notes"
+                                                    value={notes}
+                                                    onChange={(e) => setNotes(e.target.value)}
+                                                    className="form-control"
+                                                    rows="4"
+                                                    placeholder="Describe your symptoms or reason for appointment..."
+                                                />
+                                            </div>
+
+                                            <button
+                                                type="submit"
+                                                className="btn-submit"
+                                                disabled={loading || !selectedDoctor || !selectedDate || !selectedTime}
+                                            >
+                                                {loading ? 'Booking...' : 'Book Appointment'}
+                                            </button>
+                                        </>
                                     )}
-
-                                    <div className="form-group">
-                                        <label htmlFor="notes">Additional Notes (Optional)</label>
-                                        <textarea
-                                            id="notes"
-                                            value={notes}
-                                            onChange={(e) => setNotes(e.target.value)}
-                                            className="form-control"
-                                            rows="4"
-                                            placeholder="Describe your symptoms or reason for appointment..."
-                                        />
-                                    </div>
-
-                                    <button
-                                        type="submit"
-                                        className="btn-submit"
-                                        disabled={loading || !selectedDoctor || !selectedDate || !selectedTime}
-                                    >
-                                        {loading ? 'Booking...' : 'Book Appointment'}
-                                    </button>
                                 </>
                             )}
                         </form>
