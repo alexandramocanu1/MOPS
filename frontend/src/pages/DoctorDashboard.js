@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import MedicalReportGenerator from '../components/MedicalReportGenerator';
 import './DoctorDashboard.css';
 
 const API_BASE_URL = 'http://localhost:7000/api';
@@ -18,6 +19,8 @@ function DoctorDashboard() {
     const [success, setSuccess] = useState(null);
     const [activeTab, setActiveTab] = useState('upcoming');
     const [statusFilter, setStatusFilter] = useState('ALL');
+    const [showReportGenerator, setShowReportGenerator] = useState(false);
+    const [selectedAppointment, setSelectedAppointment] = useState(null);
 
     useEffect(() => {
         if (!user || user.role !== 'DOCTOR') {
@@ -138,6 +141,17 @@ function DoctorDashboard() {
             setError('Error updating appointment');
             setTimeout(() => setError(null), 3000);
         }
+    };
+
+    const handleGenerateReport = (appointment) => {
+        setSelectedAppointment(appointment);
+        setShowReportGenerator(true);
+    };
+
+    const handleReportCreated = (report) => {
+        setSuccess('Medical report created successfully');
+        setTimeout(() => setSuccess(null), 3000);
+        fetchDoctorData();
     };
 
     const formatDateTime = (dateTimeString) => {
@@ -427,6 +441,14 @@ function DoctorDashboard() {
                                             </button>
                                         </>
                                     )}
+                                    {appointment.status === 'COMPLETED' && (
+                                        <button
+                                            onClick={() => handleGenerateReport(appointment)}
+                                            className="btn-generate-report"
+                                        >
+                                            📋 Generate Medical Report
+                                        </button>
+                                    )}
                                     {appointment.status === 'PENDING' && (
                                         <button
                                             onClick={() => handleCancelAppointment(appointment.id)}
@@ -472,6 +494,17 @@ function DoctorDashboard() {
                     </div>
                 )}
             </div>
+
+            {showReportGenerator && selectedAppointment && (
+                <MedicalReportGenerator
+                    appointment={selectedAppointment}
+                    onClose={() => {
+                        setShowReportGenerator(false);
+                        setSelectedAppointment(null);
+                    }}
+                    onReportCreated={handleReportCreated}
+                />
+            )}
         </div>
     );
 }

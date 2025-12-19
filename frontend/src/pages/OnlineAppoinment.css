@@ -572,3 +572,192 @@
         align-items: flex-start;
     }
 }
+
+.rescheduling-banner {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.banner-content {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex: 1;
+}
+
+.banner-icon {
+    font-size: 32px;
+}
+
+.banner-text h3 {
+    margin: 0 0 5px 0;
+    font-size: 18px;
+}
+
+.banner-text p {
+    margin: 0;
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.btn-cancel-rescheduling {
+    background: white;
+    color: #667eea;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-cancel-rescheduling:hover {
+    background: #f0f0f0;
+    transform: translateY(-2px);
+}
+
+.selected-doctor-info {
+    background: #f8f9ff;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+    border: 2px solid #667eea;
+}
+
+.selected-doctor-info h3 {
+    margin: 0 0 5px 0;
+    color: #667eea;
+    font-size: 20px;
+}
+
+.selected-doctor-info p {
+    margin: 0;
+    color: #666;
+    font-size: 16px;
+}
+
+
+.cancellation-notice {
+    background: #fff3cd;
+    border-left: 4px solid #ffc107;
+    padding: 15px;
+    margin: 15px 20px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.notice-icon {
+    font-size: 24px;
+}
+
+.notice-text {
+    color: #856404;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.btn-reschedule {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-reschedule:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+/* Update appointment actions layout */
+.appointment-actions {
+    padding: 15px 20px;
+    background: #f8f9ff;
+    border-top: 1px solid #e0e7ff;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+}
+
+/* Alerts */
+.alert {
+    padding: 15px 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    animation: slideDown 0.3s ease;
+}
+
+.alert-error {
+    background: #fee;
+    color: #c33;
+    border-left: 4px solid #c33;
+}
+
+.alert-success {
+    background: #efe;
+    color: #2a7;
+    border-left: 4px solid #2a7;
+}
+
+.alert-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0 5px;
+    color: inherit;
+}
+
+/* Responsive updates */
+@media (max-width: 768px) {
+    .rescheduling-banner {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .btn-cancel-rescheduling {
+        width: 100%;
+    }
+
+    .appointment-actions {
+        flex-direction: column;
+    }
+
+    .btn-reschedule,
+    .btn-cancel {
+        width: 100%;
+        justify-content: center;
+    }
+}

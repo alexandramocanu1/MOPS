@@ -100,4 +100,18 @@ public class AppointmentService {
     ) {
         return appointmentRepository.findByDoctorAndAppointmentDateBetween(doctor, start, end);
     }
+
+
+    public Appointment updateAppointment(Long id, Appointment appointmentDetails) {
+        Appointment appointment = appointmentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Appointment not found"));
+        
+        appointment.setDoctor(appointmentDetails.getDoctor());
+        appointment.setAppointmentDate(appointmentDetails.getAppointmentDate());
+        appointment.setNotes(appointmentDetails.getNotes());
+        appointment.setStatus(appointmentDetails.getStatus());
+        // appointment.setCost(appointmentDetails.getCost());
+        
+        return appointmentRepository.save(appointment);
+    }
 }

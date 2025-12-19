@@ -1,0 +1,223 @@
+.medical-report-viewer {
+    max-width: 900px;
+    max-height: 90vh;
+    overflow-y: auto;
+    background: white;
+}
+
+.report-content {
+    padding: 20px 30px;
+}
+
+.report-header-info {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 25px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+}
+
+.info-row {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 15px;
+}
+
+.info-row:last-child {
+    margin-bottom: 0;
+}
+
+.info-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.info-item label {
+    font-size: 12px;
+    opacity: 0.9;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-item span {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.report-section {
+    margin-bottom: 25px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #667eea;
+}
+
+.report-section h3 {
+    color: #333;
+    margin-bottom: 12px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.report-section p {
+    color: #555;
+    line-height: 1.6;
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+.diagnosis-section {
+    background: #fff3cd;
+    border-left-color: #ffc107;
+}
+
+.diagnosis-section h3 {
+    color: #856404;
+}
+
+.diagnosis-section p {
+    color: #856404;
+    font-weight: 500;
+}
+
+.prescriptions-table {
+    overflow-x: auto;
+}
+
+.prescriptions-table table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.prescriptions-table th {
+    background: #667eea;
+    color: white;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.prescriptions-table td {
+    padding: 12px;
+    border-bottom: 1px solid #e9ecef;
+    color: #555;
+}
+
+.prescriptions-table tr:last-child td {
+    border-bottom: none;
+}
+
+.prescriptions-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.follow-up-section {
+    background: #d1ecf1;
+    border-left-color: #17a2b8;
+}
+
+.follow-up-section h3 {
+    color: #0c5460;
+}
+
+.follow-up-section p {
+    color: #0c5460;
+}
+
+.follow-up-section strong {
+    color: #0c5460;
+    font-weight: 700;
+}
+
+.report-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    padding: 20px 30px;
+    border-top: 1px solid #e9ecef;
+    background: #f8f9fa;
+}
+
+.btn-close-report,
+.btn-print-report {
+    padding: 12px 24px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-close-report {
+    background: transparent;
+    color: #666;
+    border: 2px solid #ddd;
+}
+
+.btn-close-report:hover {
+    background: #f0f0f0;
+    border-color: #999;
+}
+
+.btn-print-report {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-print-report:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+/* Print Styles */
+@media print {
+    .modal-overlay {
+        background: white !important;
+    }
+
+    .modal-header,
+    .report-footer {
+        display: none !important;
+    }
+
+    .medical-report-viewer {
+        max-height: none;
+        box-shadow: none;
+    }
+
+    .report-section {
+        page-break-inside: avoid;
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .medical-report-viewer {
+        max-width: 95vw;
+        margin: 20px auto;
+    }
+
+    .info-row {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .report-content {
+        padding: 15px;
+    }
+
+    .report-footer {
+        flex-direction: column;
+    }
+
+    .btn-close-report,
+    .btn-print-report {
+        width: 100%;
+    }
+}
