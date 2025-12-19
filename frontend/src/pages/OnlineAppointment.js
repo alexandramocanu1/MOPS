@@ -22,6 +22,10 @@ function OnlineAppoinment() {
     const [selectedTime, setSelectedTime] = useState('');
     const [notes, setNotes] = useState('');
 
+    // Stare pentru reprogramare
+    const [isRescheduling, setIsRescheduling] = useState(false);
+    const [reschedulingAppointment, setReschedulingAppointment] = useState(null);
+
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
@@ -40,7 +44,9 @@ function OnlineAppoinment() {
                 d => d.specialty?.id === parseInt(selectedSpecialty) && d.isActive
             );
             setFilteredDoctors(filtered);
-            setSelectedDoctor(null);
+            if (!isRescheduling) {
+                setSelectedDoctor(null);
+            }
         } else {
             setFilteredDoctors(doctors.filter(d => d.isActive));
         }
@@ -117,37 +123,92 @@ function OnlineAppoinment() {
 
             const appointmentDateTime = `${selectedDate}T${selectedTime}`;
 
-            const response = await fetch(`${API_BASE_URL}/appointments`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    patient: { id: user.id },
-                    doctor: { id: selectedDoctor.id },
-                    appointmentDate: appointmentDateTime,
-                    notes: notes || '',
-                    status: 'CONFIRMED', 
-                    cost: 150
-                })
-            });
-
-            if (response.ok) {
-                const newAppointment = await response.json();
-                navigate('/payment', { 
-                    state: { 
-                        appointmentId: newAppointment.id,
-                        amount: 150,
-                        doctorName: selectedDoctor.user?.fullName || 
-                                   `${selectedDoctor.user?.firstName} ${selectedDoctor.user?.lastName}`
-                    } 
+            if (isRescheduling && reschedulingAppointment) {
+                // Reprogramăm programarea existentă
+                const response = await fetch(`${API_BASE_URL}/appointments/${reschedulingAppointment.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        patient: { id: user.id },
+                        doctor: { id: selectedDoctor.id },
+                        appointmentDate: appointmentDateTime,
+                        notes: notes || reschedulingAppointment.notes || '',
+                        status: 'CONFIRMED',
+                        cost: reschedulingAppointment.cost || 150
+                    })
                 });
+
+                if (response.ok) {
+                    setSuccess('Appointment rescheduled successfully!');
+                    setIsRescheduling(false);
+                    setReschedulingAppointment(null);
+                    resetForm();
+                    await fetchMyAppointments();
+                    setActiveView('myappointments');
+                    setTimeout(() => setSuccess(null), 3000);
+                } else {
+                    setError('Eroare la reprogramarea programării.');
+                }
             } else {
-                setError('Eroare la crearea programării.');
+                // Creăm o programare nouă
+                const response = await fetch(`${API_BASE_URL}/appointments`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        patient: { id: user.id },
+                        doctor: { id: selectedDoctor.id },
+                        appointmentDate: appointmentDateTime,
+                        notes: notes || '',
+                        status: 'CONFIRMED', 
+                        cost: 150
+                    })
+                });
+
+                if (response.ok) {
+                    const newAppointment = await response.json();
+                    navigate('/payment', { 
+                        state: { 
+                            appointmentId: newAppointment.id,
+                            amount: 150,
+                            doctorName: selectedDoctor.user?.fullName || 
+                                       `${selectedDoctor.user?.firstName} ${selectedDoctor.user?.lastName}`
+                        } 
+                    });
+                } else {
+                    setError('Eroare la crearea programării.');
+                }
             }
         } catch (err) {
             setError('Eroare de conexiune la server.');
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleRescheduleAppointment = (appointment) => {
+        setIsRescheduling(true);
+        setReschedulingAppointment(appointment);
+        setSelectedDoctor(appointment.doctor);
+        setSelectedSpecialty(appointment.doctor.specialty?.id?.toString() || '');
+        setNotes(appointment.notes || '');
+        setSelectedDate('');
+        setSelectedTime('');
+        setActiveView('book');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const handleCancelRescheduling = () => {
+        setIsRescheduling(false);
+        setReschedulingAppointment(null);
+        resetForm();
+    };
+
+    const resetForm = () => {
+        setSelectedSpecialty('');
+        setSelectedDoctor(null);
+        setSelectedDate('');
+        setSelectedTime('');
+        setNotes('');
     };
 
     const handleCancelAppointment = async (appointmentId) => {
@@ -203,7 +264,7 @@ function OnlineAppoinment() {
 
     const getDayOfWeek = (dateString) => {
         const date = new Date(dateString + 'T00:00:00');
-        return date.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
+        return date.getDay();
     };
 
     const getDayOfWeekName = (dayNumber) => {
@@ -250,13 +311,23 @@ function OnlineAppoinment() {
                 <div className="view-toggle">
                     <button
                         className={`toggle-btn ${activeView === 'book' ? 'active' : ''}`}
-                        onClick={() => setActiveView('book')}
+                        onClick={() => {
+                            setActiveView('book');
+                            if (!isRescheduling) {
+                                resetForm();
+                            }
+                        }}
                     >
-                        Book Appointment
+                        {isRescheduling ? 'Reschedule Appointment' : 'Book Appointment'}
                     </button>
                     <button
                         className={`toggle-btn ${activeView === 'myappointments' ? 'active' : ''}`}
-                        onClick={() => setActiveView('myappointments')}
+                        onClick={() => {
+                            setActiveView('myappointments');
+                            if (isRescheduling) {
+                                handleCancelRescheduling();
+                            }
+                        }}
                     >
                         My Appointments
                     </button>
@@ -280,55 +351,81 @@ function OnlineAppoinment() {
             {activeView === 'book' && (
                 <div className="booking-section">
                     <div className="booking-container">
-                        <h2>Book a New Appointment</h2>
+                        {isRescheduling && (
+                            <div className="rescheduling-banner">
+                                <div className="banner-content">
+                                    <span className="banner-icon">🔄</span>
+                                    <div className="banner-text">
+                                        <h3>Rescheduling Appointment</h3>
+                                        <p>Original appointment with Dr. {reschedulingAppointment.doctor?.user?.firstName} {reschedulingAppointment.doctor?.user?.lastName} on {formatDateTime(reschedulingAppointment.appointmentDate)}</p>
+                                    </div>
+                                </div>
+                                <button onClick={handleCancelRescheduling} className="btn-cancel-rescheduling">
+                                    Cancel Rescheduling
+                                </button>
+                            </div>
+                        )}
+
+                        <h2>{isRescheduling ? 'Select New Date & Time' : 'Book a New Appointment'}</h2>
 
                         <form onSubmit={handleBookAppointment} className="booking-form">
-                            <div className="form-group">
-                                <label htmlFor="specialty">Select Specialty</label>
-                                <select
-                                    id="specialty"
-                                    value={selectedSpecialty}
-                                    onChange={(e) => setSelectedSpecialty(e.target.value)}
-                                    className="form-control"
-                                >
-                                    <option value="">All Specialties</option>
-                                    {specialties.map(specialty => (
-                                        <option key={specialty.id} value={specialty.id}>
-                                            {specialty.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+                            {!isRescheduling && (
+                                <>
+                                    <div className="form-group">
+                                        <label htmlFor="specialty">Select Specialty</label>
+                                        <select
+                                            id="specialty"
+                                            value={selectedSpecialty}
+                                            onChange={(e) => setSelectedSpecialty(e.target.value)}
+                                            className="form-control"
+                                        >
+                                            <option value="">All Specialties</option>
+                                            {specialties.map(specialty => (
+                                                <option key={specialty.id} value={specialty.id}>
+                                                    {specialty.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
 
-                            <div className="form-group">
-                                <label>Select Doctor *</label>
-                                <div className="doctors-grid">
-                                    {filteredDoctors.length === 0 ? (
-                                        <p className="no-doctors">No doctors available for this specialty</p>
-                                    ) : (
-                                        filteredDoctors.map(doctor => (
-                                            <div
-                                                key={doctor.id}
-                                                className={`doctor-card ${selectedDoctor?.id === doctor.id ? 'selected' : ''}`}
-                                                onClick={() => setSelectedDoctor(doctor)}
-                                            >
-                                                <div className="doctor-icon">👨‍⚕️</div>
-                                                <h3>
-                                                    {doctor.user?.fullName ||
-                                                     (doctor.user?.firstName && doctor.user?.lastName
-                                                        ? `${doctor.user.firstName} ${doctor.user.lastName}`
-                                                        : 'N/A')}
-                                                </h3>
-                                                <p className="doctor-specialty">{doctor.specialty?.name}</p>
-                                                <p className="doctor-experience">{doctor.experienceYears} years experience</p>
-                                                <div className="doctor-rating">
-                                                    ⭐ Popularity: {doctor.popularity}
-                                                </div>
-                                            </div>
-                                        ))
-                                    )}
+                                    <div className="form-group">
+                                        <label>Select Doctor *</label>
+                                        <div className="doctors-grid">
+                                            {filteredDoctors.length === 0 ? (
+                                                <p className="no-doctors">No doctors available for this specialty</p>
+                                            ) : (
+                                                filteredDoctors.map(doctor => (
+                                                    <div
+                                                        key={doctor.id}
+                                                        className={`doctor-card ${selectedDoctor?.id === doctor.id ? 'selected' : ''}`}
+                                                        onClick={() => setSelectedDoctor(doctor)}
+                                                    >
+                                                        <div className="doctor-icon">👨‍⚕️</div>
+                                                        <h3>
+                                                            {doctor.user?.fullName ||
+                                                             (doctor.user?.firstName && doctor.user?.lastName
+                                                                ? `${doctor.user.firstName} ${doctor.user.lastName}`
+                                                                : 'N/A')}
+                                                        </h3>
+                                                        <p className="doctor-specialty">{doctor.specialty?.name}</p>
+                                                        <p className="doctor-experience">{doctor.experienceYears} years experience</p>
+                                                        <div className="doctor-rating">
+                                                            ⭐ Popularity: {doctor.popularity}
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+
+                            {isRescheduling && (
+                                <div className="selected-doctor-info">
+                                    <h3>Doctor: Dr. {selectedDoctor?.user?.firstName} {selectedDoctor?.user?.lastName}</h3>
+                                    <p>{selectedDoctor?.specialty?.name}</p>
                                 </div>
-                            </div>
+                            )}
 
                             {selectedDoctor && (
                                 <>
@@ -405,7 +502,7 @@ function OnlineAppoinment() {
                                                 className="btn-submit"
                                                 disabled={loading || !selectedDoctor || !selectedDate || !selectedTime}
                                             >
-                                                {loading ? 'Booking...' : 'Book Appointment'}
+                                                {loading ? (isRescheduling ? 'Rescheduling...' : 'Booking...') : (isRescheduling ? 'Confirm Reschedule' : 'Book Appointment')}
                                             </button>
                                         </>
                                     )}
@@ -442,6 +539,16 @@ function OnlineAppoinment() {
                                             <span className="appointment-id">#{appointment.id}</span>
                                         </div>
 
+                                        {(appointment.status === 'CANCELLED' || appointment.status === 'REJECTED') && (
+                                            <div className="cancellation-notice">
+                                                <span className="notice-icon">⚠️</span>
+                                                <span className="notice-text">
+                                                    This appointment has been {appointment.status.toLowerCase()}. 
+                                                    {appointment.status === 'CANCELLED' && ' You can reschedule it below.'}
+                                                </span>
+                                            </div>
+                                        )}
+
                                         <div className="appointment-body">
                                             <div className="appointment-info">
                                                 <div className="info-row">
@@ -470,16 +577,24 @@ function OnlineAppoinment() {
                                             </div>
                                         </div>
 
-                                        {(appointment.status === 'PENDING' || appointment.status === 'CONFIRMED') && (
-                                            <div className="appointment-actions">
+                                        <div className="appointment-actions">
+                                            {(appointment.status === 'CANCELLED' || appointment.status === 'REJECTED') && (
+                                                <button
+                                                    onClick={() => handleRescheduleAppointment(appointment)}
+                                                    className="btn-reschedule"
+                                                >
+                                                    🔄 Reschedule Appointment
+                                                </button>
+                                            )}
+                                            {(appointment.status === 'PENDING' || appointment.status === 'CONFIRMED') && (
                                                 <button
                                                     onClick={() => handleCancelAppointment(appointment.id)}
                                                     className="btn-cancel"
                                                 >
                                                     Cancel Appointment
                                                 </button>
-                                            </div>
-                                        )}
+                                            )}
+                                        </div>
                                     </div>
                                 ))}
                             </div>

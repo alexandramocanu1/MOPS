@@ -127,6 +127,18 @@ public class AppointmentController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Appointment> updateAppointment(
+            @PathVariable Long id,
+            @RequestBody Appointment appointmentDetails) {
+        try {
+            Appointment updatedAppointment = appointmentService.updateAppointment(id, appointmentDetails);
+            return ResponseEntity.ok(updatedAppointment);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
     
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteAppointment(@PathVariable Long id) {
