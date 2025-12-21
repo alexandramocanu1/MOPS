@@ -1,0 +1,142 @@
+.home-container {
+  min-height: calc(100vh - 70px); 
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.home-hero {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: white;
+}
+
+.home-title {
+  font-size: 4rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.home-subtitle {
+  font-size: 1.5rem;
+  margin-bottom: 2rem;
+  opacity: 0.9;
+}
+
+.home-cta {
+  font-size: 1.2rem;
+  margin-top: 1.5rem;
+  padding: 1rem 2rem;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  display: inline-block;
+  backdrop-filter: blur(10px);
+}
+
+.home-features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 3rem 2rem;
+}
+
+.home-feature {
+  background: white;
+  padding: 2.5rem;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.home-feature h3 {
+  font-size: 1.75rem;
+  color: #333;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.home-feature p {
+  color: #666;
+  line-height: 1.6;
+  font-size: 1.1rem;
+}
+
+.home-feature.clickable {
+  cursor: pointer;
+  padding-bottom: 3.5rem;
+}
+
+.home-feature.clickable:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+.home-feature.clickable:hover h3 {
+  color: #667eea;
+}
+
+.home-feature.clickable:active {
+  transform: translateY(-2px);
+}
+
+.feature-arrow {
+  position: absolute;
+  bottom: 1.5rem;
+  right: 2rem;
+  font-size: 2rem;
+  color: #667eea;
+  transition: all 0.3s ease;
+}
+
+.home-feature.clickable:hover .feature-arrow {
+  right: 1.5rem;
+  color: #764ba2;
+}
+
+@media (max-width: 768px) {
+  .home-title {
+    font-size: 2.5rem;
+  }
+
+  .home-subtitle {
+    font-size: 1.2rem;
+  }
+
+  .home-cta {
+    font-size: 1rem;
+    padding: 0.8rem 1.5rem;
+  }
+
+  .home-features {
+    grid-template-columns: 1fr;
+    padding: 2rem 1rem;
+  }
+
+  .home-feature {
+    padding: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-title {
+    font-size: 2rem;
+  }
+
+  .home-subtitle {
+    font-size: 1rem;
+  }
+
+  .home-cta {
+    font-size: 0.9rem;
+  }
+
+  .home-feature h3 {
+    font-size: 1.5rem;
+  }
+
+  .home-feature p {
+    font-size: 1rem;
+  }
+}
