@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './MedicalReportGenerator.css';
 
 const API_BASE_URL = 'http://localhost:7000/api';
 
-function MedicalReportGenerator({ appointment, onClose, onReportCreated }) {
+function MedicalReportGenerator({ appointment, existingReport, isEditMode, onClose, onReportCreated }) {
     const [reportData, setReportData] = useState({
         diagnosis: '',
         symptoms: '',
@@ -17,6 +17,28 @@ function MedicalReportGenerator({ appointment, onClose, onReportCreated }) {
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+
+    useEffect(() => {
+        if (existingReport && isEditMode) {
+            setReportData({
+                diagnosis: existingReport.diagnosis || '',
+                symptoms: existingReport.symptoms || '',
+                physicalExamination: existingReport.physicalExamination || '',
+                investigations: existingReport.investigations || '',
+                prescriptions: existingReport.prescriptions && existingReport.prescriptions.length > 0
+                    ? existingReport.prescriptions.map(p => ({
+                        medication: p.medication || '',
+                        dosage: p.dosage || '',
+                        frequency: p.frequency || '',
+                        duration: p.duration || ''
+                    }))
+                    : [{ medication: '', dosage: '', frequency: '', duration: '' }],
+                recommendations: existingReport.recommendations || '',
+                followUpDate: existingReport.followUpDate ? existingReport.followUpDate.split('T')[0] : '',
+                additionalNotes: existingReport.additionalNotes || ''
+            });
+        }
+    }, [existingReport, isEditMode]);
 
     const handleInputChange = (field, value) => {
         setReportData(prev => ({
@@ -73,11 +95,17 @@ function MedicalReportGenerator({ appointment, onClose, onReportCreated }) {
                 recommendations: reportData.recommendations,
                 followUpDate: reportData.followUpDate || null,
                 additionalNotes: reportData.additionalNotes,
-                createdDate: new Date().toISOString()
+                createdDate: isEditMode && existingReport ? existingReport.createdDate : new Date().toISOString()
             };
 
-            const response = await fetch(`${API_BASE_URL}/medical-reports`, {
-                method: 'POST',
+            const url = isEditMode && existingReport
+                ? `${API_BASE_URL}/medical-reports/${existingReport.id}`
+                : `${API_BASE_URL}/medical-reports`;
+
+            const method = isEditMode && existingReport ? 'PUT' : 'POST';
+
+            const response = await fetch(url, {
+                method: method,
                 headers: {
                     'Content-Type': 'application/json'
                 },
@@ -107,7 +135,7 @@ function MedicalReportGenerator({ appointment, onClose, onReportCreated }) {
         <div className="modal-overlay">
             <div className="modal-content medical-report-modal">
                 <div className="modal-header">
-                    <h2>Generate Medical Report</h2>
+                    <h2>{isEditMode ? 'Edit Medical Report' : 'Generate Medical Report'}</h2>
                     <button className="close-btn" onClick={onClose}>×</button>
                 </div>
 
@@ -126,7 +154,7 @@ function MedicalReportGenerator({ appointment, onClose, onReportCreated }) {
 
                 <form onSubmit={handleSubmit} className="report-form">
                     <div className="form-section">
-                        <h3>Chief Complaints & Symptoms</h3>
+                        <h3>Complaints & Symptoms</h3>
                         <textarea
                             value={reportData.symptoms}
                             onChange={(e) => handleInputChange('symptoms', e.target.value)}
@@ -261,7 +289,9 @@ function MedicalReportGenerator({ appointment, onClose, onReportCreated }) {
                             Cancel
                         </button>
                         <button type="submit" className="btn-submit" disabled={loading}>
-                            {loading ? 'Generating Report...' : 'Generate Report'}
+                            {loading
+                                ? (isEditMode ? 'Updating Report...' : 'Generating Report...')
+                                : (isEditMode ? 'Update Report' : 'Generate Report')}
                         </button>
                     </div>
                 </form>

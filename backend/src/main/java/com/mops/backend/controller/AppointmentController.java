@@ -128,6 +128,16 @@ public class AppointmentController {
         }
     }
 
+    @PutMapping("/{id}/pending")
+    public ResponseEntity<Appointment> setPendingAppointment(@PathVariable Long id) {
+        try {
+            Appointment appointment = appointmentService.setPendingAppointment(id);
+            return ResponseEntity.ok(appointment);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<Appointment> updateAppointment(
             @PathVariable Long id,

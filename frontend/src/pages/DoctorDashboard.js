@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import MedicalReportGenerator from '../components/MedicalReportGenerator';
+import MedicalReportViewer from '../components/MedicalReportViewer';
 import './DoctorDashboard.css';
 
 const API_BASE_URL = 'http://localhost:7000/api';
@@ -14,13 +15,17 @@ function DoctorDashboard() {
     const [appointments, setAppointments] = useState([]);
     const [filteredAppointments, setFilteredAppointments] = useState([]);
     const [availabilities, setAvailabilities] = useState([]);
+    const [medicalReports, setMedicalReports] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
     const [activeTab, setActiveTab] = useState('upcoming');
     const [statusFilter, setStatusFilter] = useState('ALL');
     const [showReportGenerator, setShowReportGenerator] = useState(false);
+    const [showReportViewer, setShowReportViewer] = useState(false);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
+    const [selectedReport, setSelectedReport] = useState(null);
+    const [isEditMode, setIsEditMode] = useState(false);
 
     useEffect(() => {
         if (!user || user.role !== 'DOCTOR') {
@@ -33,6 +38,25 @@ function DoctorDashboard() {
     useEffect(() => {
         filterAppointments();
     }, [appointments, activeTab, statusFilter]);
+
+    const fetchMedicalReports = async (appointmentsData) => {
+        const reportsMap = {};
+        const completedAppointments = appointmentsData.filter(apt => apt.status === 'COMPLETED');
+
+        for (const appointment of completedAppointments) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/medical-reports/appointment/${appointment.id}`);
+                if (response.ok) {
+                    const report = await response.json();
+                    reportsMap[appointment.id] = report;
+                }
+            } catch (err) {
+                console.error(`Error fetching report for appointment ${appointment.id}:`, err);
+            }
+        }
+
+        setMedicalReports(reportsMap);
+    };
 
     const fetchDoctorData = async () => {
         try {
@@ -55,7 +79,10 @@ function DoctorDashboard() {
             const appointmentsData = await appointmentsResponse.json();
             setAppointments(appointmentsData);
 
-            
+            // Fetch medical reports for completed appointments
+            await fetchMedicalReports(appointmentsData);
+
+
             const availabilitiesResponse = await fetch(`${API_BASE_URL}/availability/doctor/${doctorData.id}`);
             if (availabilitiesResponse.ok) {
                 const availabilitiesData = await availabilitiesResponse.json();
@@ -143,13 +170,64 @@ function DoctorDashboard() {
         }
     };
 
+    const handleMarkAsPending = async (appointmentId) => {
+        if (!window.confirm('Mark this appointment as pending?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/appointments/${appointmentId}/pending`, {
+                method: 'PUT'
+            });
+
+            if (response.ok) {
+                setSuccess('Appointment marked as pending');
+                fetchDoctorData();
+                setTimeout(() => setSuccess(null), 3000);
+            } else {
+                setError('Failed to update appointment');
+                setTimeout(() => setError(null), 3000);
+            }
+        } catch (err) {
+            console.error('Error updating appointment:', err);
+            setError('Error updating appointment');
+            setTimeout(() => setError(null), 3000);
+        }
+    };
+
     const handleGenerateReport = (appointment) => {
         setSelectedAppointment(appointment);
+        setSelectedReport(null);
+        setIsEditMode(false);
         setShowReportGenerator(true);
+    };
+
+    const handleViewReport = (appointment) => {
+        const report = medicalReports[appointment.id];
+        if (report) {
+            setSelectedReport(report);
+            setShowReportViewer(true);
+        }
+    };
+
+    const handleEditReport = (appointment) => {
+        const report = medicalReports[appointment.id];
+        if (report) {
+            setSelectedAppointment(appointment);
+            setSelectedReport(report);
+            setIsEditMode(true);
+            setShowReportGenerator(true);
+        }
     };
 
     const handleReportCreated = (report) => {
         setSuccess('Medical report created successfully');
+        setTimeout(() => setSuccess(null), 3000);
+        fetchDoctorData();
+    };
+
+    const handleReportUpdated = (report) => {
+        setSuccess('Medical report updated successfully');
         setTimeout(() => setSuccess(null), 3000);
         fetchDoctorData();
     };
@@ -425,13 +503,13 @@ function DoctorDashboard() {
                                 </div>
 
                                 <div className="appointment-actions">
-                                    {appointment.status === 'CONFIRMED' && activeTab === 'upcoming' && (
+                                    {(appointment.status === 'CONFIRMED' || appointment.status === 'PENDING') && (
                                         <>
                                             <button
                                                 onClick={() => handleCompleteAppointment(appointment.id)}
                                                 className="btn-complete"
                                             >
-                                                ✓ Mark as Completed
+                                                ✓ Complete
                                             </button>
                                             <button
                                                 onClick={() => handleCancelAppointment(appointment.id)}
@@ -442,20 +520,37 @@ function DoctorDashboard() {
                                         </>
                                     )}
                                     {appointment.status === 'COMPLETED' && (
-                                        <button
-                                            onClick={() => handleGenerateReport(appointment)}
-                                            className="btn-generate-report"
-                                        >
-                                            📋 Generate Medical Report
-                                        </button>
-                                    )}
-                                    {appointment.status === 'PENDING' && (
-                                        <button
-                                            onClick={() => handleCancelAppointment(appointment.id)}
-                                            className="btn-cancel-appointment"
-                                        >
-                                            Cancel
-                                        </button>
+                                        <>
+                                            {medicalReports[appointment.id] ? (
+                                                <>
+                                                    <button
+                                                        onClick={() => handleViewReport(appointment)}
+                                                        className="btn-view-report"
+                                                    >
+                                                        👁 View Report
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleEditReport(appointment)}
+                                                        className="btn-edit-report"
+                                                    >
+                                                        ✏️ Edit Report
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <button
+                                                    onClick={() => handleGenerateReport(appointment)}
+                                                    className="btn-generate-report"
+                                                >
+                                                    📋 Generate Medical Report
+                                                </button>
+                                            )}
+                                            <button
+                                                onClick={() => handleMarkAsPending(appointment.id)}
+                                                className="btn-mark-pending"
+                                            >
+                                                ← Mark as Pending
+                                            </button>
+                                        </>
                                     )}
                                 </div>
                             </div>
@@ -498,11 +593,25 @@ function DoctorDashboard() {
             {showReportGenerator && selectedAppointment && (
                 <MedicalReportGenerator
                     appointment={selectedAppointment}
+                    existingReport={isEditMode ? selectedReport : null}
+                    isEditMode={isEditMode}
                     onClose={() => {
                         setShowReportGenerator(false);
                         setSelectedAppointment(null);
+                        setSelectedReport(null);
+                        setIsEditMode(false);
                     }}
-                    onReportCreated={handleReportCreated}
+                    onReportCreated={isEditMode ? handleReportUpdated : handleReportCreated}
+                />
+            )}
+
+            {showReportViewer && selectedReport && (
+                <MedicalReportViewer
+                    report={selectedReport}
+                    onClose={() => {
+                        setShowReportViewer(false);
+                        setSelectedReport(null);
+                    }}
                 />
             )}
         </div>

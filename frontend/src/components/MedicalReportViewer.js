@@ -67,7 +67,7 @@ function MedicalReportViewer({ report, onClose }) {
 
                     {report.symptoms && (
                         <div className="report-section">
-                            <h3>Chief Complaints & Symptoms</h3>
+                            <h3>Complaints & Symptoms</h3>
                             <p>{report.symptoms}</p>
                         </div>
                     )}

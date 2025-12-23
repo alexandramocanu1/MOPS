@@ -466,6 +466,56 @@
     box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
 }
 
+.btn-mark-pending {
+    padding: 10px 20px;
+    background: transparent;
+    color: #f39c12;
+    border: 2px solid #f39c12;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-mark-pending:hover {
+    background: #f39c12;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.btn-view-report {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-view-report:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(17, 153, 142, 0.4);
+}
+
+.btn-edit-report {
+    padding: 10px 20px;
+    background: transparent;
+    color: #667eea;
+    border: 2px solid #667eea;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-edit-report:hover {
+    background: #667eea;
+    color: white;
+    transform: translateY(-2px);
+}
+
 .no-appointments {
     text-align: center;
     padding: 60px 20px;

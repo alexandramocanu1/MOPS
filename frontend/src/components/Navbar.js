@@ -19,7 +19,7 @@ function Navbar() {
           to="/" 
           className={`navbar-link ${location.pathname === '/' ? 'active' : ''}`}
         >
-          Acasă
+          Home
         </Link>
       </div>
 
@@ -28,7 +28,7 @@ function Navbar() {
           Login
         </Link>
         <Link to="/register" className="navbar-button register">
-          Înregistrare
+          Register
         </Link>
       </div>
     </>
@@ -41,7 +41,7 @@ function Navbar() {
           to="/" 
           className={`navbar-link ${location.pathname === '/' ? 'active' : ''}`}
         >
-          Acasă
+          Home
         </Link>
         
         <Link 
@@ -55,14 +55,14 @@ function Navbar() {
           to="/appointments" 
           className={`navbar-link ${location.pathname === '/appointments' ? 'active' : ''}`}
         >
-          Programări
+          Appointments
         </Link>
         
         <Link 
           to="/doctors" 
           className={`navbar-link ${location.pathname === '/doctors' ? 'active' : ''}`}
         >
-          Doctori
+          Doctors
         </Link>
 
       </div>

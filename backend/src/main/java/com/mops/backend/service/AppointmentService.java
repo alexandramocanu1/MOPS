@@ -87,7 +87,10 @@ public class AppointmentService {
     public Appointment completeAppointment(Long id) {
         return updateAppointmentStatus(id, "COMPLETED");
     }
-    
+
+    public Appointment setPendingAppointment(Long id) {
+        return updateAppointmentStatus(id, "PENDING");
+    }
 
     public void deleteAppointment(Long id) {
         appointmentRepository.deleteById(id);
