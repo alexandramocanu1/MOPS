@@ -38,7 +38,7 @@ function PatientDashboard() {
             setLoading(true);
             setError(null);
 
-            // Fetch appointments
+            
             const appointmentsResponse = await fetch(`${API_BASE_URL}/appointments/patient/${user.id}`);
             if (!appointmentsResponse.ok) {
                 throw new Error('Failed to fetch appointments');
@@ -216,7 +216,6 @@ function PatientDashboard() {
                 </div>
             )}
 
-            {/* Statistics */}
             <div className="stats-section">
                 <div className="stat-card stat-upcoming">
                     <div className="stat-info">
@@ -343,7 +342,7 @@ function PatientDashboard() {
                                             onClick={() => handleViewReport(appointment.id)}
                                             className="btn-view-report"
                                         >
-                                            📋 View Medical Report
+                                             View Medical Report
                                         </button>
                                     )}
                                     {(appointment.status === 'PENDING' || appointment.status === 'CONFIRMED') && activeTab === 'upcoming' && (

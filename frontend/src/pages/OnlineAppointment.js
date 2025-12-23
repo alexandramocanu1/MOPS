@@ -150,7 +150,6 @@ function OnlineAppoinment() {
                     setError('Eroare la reprogramarea programării.');
                 }
             } else {
-                // Creăm o programare nouă
                 const response = await fetch(`${API_BASE_URL}/appointments`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -354,7 +353,6 @@ function OnlineAppoinment() {
                         {isRescheduling && (
                             <div className="rescheduling-banner">
                                 <div className="banner-content">
-                                    <span className="banner-icon">🔄</span>
                                     <div className="banner-text">
                                         <h3>Rescheduling Appointment</h3>
                                         <p>Original appointment with Dr. {reschedulingAppointment.doctor?.user?.firstName} {reschedulingAppointment.doctor?.user?.lastName} on {formatDateTime(reschedulingAppointment.appointmentDate)}</p>
@@ -400,7 +398,6 @@ function OnlineAppoinment() {
                                                         className={`doctor-card ${selectedDoctor?.id === doctor.id ? 'selected' : ''}`}
                                                         onClick={() => setSelectedDoctor(doctor)}
                                                     >
-                                                        <div className="doctor-icon">👨‍⚕️</div>
                                                         <h3>
                                                             {doctor.user?.fullName ||
                                                              (doctor.user?.firstName && doctor.user?.lastName
@@ -410,7 +407,7 @@ function OnlineAppoinment() {
                                                         <p className="doctor-specialty">{doctor.specialty?.name}</p>
                                                         <p className="doctor-experience">{doctor.experienceYears} years experience</p>
                                                         <div className="doctor-rating">
-                                                            ⭐ Popularity: {doctor.popularity}
+                                                            Popularity: {doctor.popularity}
                                                         </div>
                                                     </div>
                                                 ))
@@ -432,7 +429,7 @@ function OnlineAppoinment() {
                                     {availabilities.length === 0 ? (
                                         <div className="no-availability-warning">
                                             <p style={{color: '#ff6b6b', padding: '15px', background: '#ffe0e0', borderRadius: '5px', marginTop: '20px'}}>
-                                                ⚠️ This doctor hasn't set their availability yet. Please select another doctor or contact the clinic administrator.
+                                                This doctor hasn't set their availability yet. Please select another doctor or contact the clinic administrator.
                                             </p>
                                         </div>
                                     ) : (
@@ -541,7 +538,6 @@ function OnlineAppoinment() {
 
                                         {(appointment.status === 'CANCELLED' || appointment.status === 'REJECTED') && (
                                             <div className="cancellation-notice">
-                                                <span className="notice-icon">⚠️</span>
                                                 <span className="notice-text">
                                                     This appointment has been {appointment.status.toLowerCase()}. 
                                                     {appointment.status === 'CANCELLED' && ' You can reschedule it below.'}
@@ -583,7 +579,7 @@ function OnlineAppoinment() {
                                                     onClick={() => handleRescheduleAppointment(appointment)}
                                                     className="btn-reschedule"
                                                 >
-                                                    🔄 Reschedule Appointment
+                                                    Reschedule Appointment
                                                 </button>
                                             )}
                                             {(appointment.status === 'PENDING' || appointment.status === 'CONFIRMED') && (

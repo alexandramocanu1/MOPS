@@ -34,7 +34,6 @@ function DoctorsPage() {
             const doctorsData = await doctorsRes.json();
             const specialtiesData = await specialtiesRes.json();
 
-            // Sort doctors by popularity (highest first)
             const sortedDoctors = doctorsData.sort((a, b) => b.popularity - a.popularity);
 
             setDoctors(sortedDoctors);
@@ -51,14 +50,12 @@ function DoctorsPage() {
     const filterDoctors = () => {
         let filtered = [...doctors];
 
-        // Filter by specialty
         if (selectedSpecialty) {
             filtered = filtered.filter(
                 doctor => doctor.specialty?.id === parseInt(selectedSpecialty)
             );
         }
 
-        // Filter by search term (name or specialty)
         if (searchTerm) {
             const term = searchTerm.toLowerCase();
             filtered = filtered.filter(
@@ -159,7 +156,6 @@ function DoctorsPage() {
                     {filteredDoctors.map(doctor => (
                         <div key={doctor.id} className={`doctor-card-detail ${!doctor.isActive ? 'inactive' : ''}`}>
                             <div className="doctor-card-header">
-                                <div className="doctor-avatar">👨‍⚕️</div>
                                 <div className="doctor-status-badge">
                                     {doctor.isActive ? (
                                         <span className="badge-active">Active</span>
@@ -180,17 +176,14 @@ function DoctorsPage() {
 
                                 <div className="doctor-details">
                                     <div className="detail-item">
-                                        <span className="detail-icon">📧</span>
                                         <span className="detail-text">{doctor.user?.email || 'N/A'}</span>
                                     </div>
 
                                     <div className="detail-item">
-                                        <span className="detail-icon">💼</span>
                                         <span className="detail-text">{doctor.experienceYears} years experience</span>
                                     </div>
 
                                     <div className="detail-item">
-                                        <span className="detail-icon">⭐</span>
                                         <span className="detail-text">Popularity: {doctor.popularity}</span>
                                     </div>
                                 </div>
