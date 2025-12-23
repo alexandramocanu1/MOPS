@@ -21,6 +21,7 @@ function DoctorDashboard() {
     const [success, setSuccess] = useState(null);
     const [activeTab, setActiveTab] = useState('upcoming');
     const [statusFilter, setStatusFilter] = useState('ALL');
+    const [searchQuery, setSearchQuery] = useState('');
     const [showReportGenerator, setShowReportGenerator] = useState(false);
     const [showReportViewer, setShowReportViewer] = useState(false);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
@@ -37,7 +38,7 @@ function DoctorDashboard() {
 
     useEffect(() => {
         filterAppointments();
-    }, [appointments, activeTab, statusFilter]);
+    }, [appointments, activeTab, statusFilter, searchQuery]);
 
     const fetchMedicalReports = async (appointmentsData) => {
         const reportsMap = {};
@@ -100,21 +101,35 @@ function DoctorDashboard() {
     const filterAppointments = () => {
         let filtered = [...appointments];
 
-        
+
         const now = new Date();
         if (activeTab === 'upcoming') {
             filtered = filtered.filter(apt => new Date(apt.appointmentDate) >= now);
-            
+
             filtered.sort((a, b) => new Date(a.appointmentDate) - new Date(b.appointmentDate));
         } else {
             filtered = filtered.filter(apt => new Date(apt.appointmentDate) < now);
-            
+
             filtered.sort((a, b) => new Date(b.appointmentDate) - new Date(a.appointmentDate));
         }
 
-        
+
         if (statusFilter !== 'ALL') {
             filtered = filtered.filter(apt => apt.status === statusFilter);
+        }
+
+        // Filter by search query (patient name or ID)
+        if (searchQuery.trim()) {
+            const query = searchQuery.toLowerCase().trim();
+            filtered = filtered.filter(apt => {
+                const patientName = `${apt.patient?.firstName || ''} ${apt.patient?.lastName || ''}`.toLowerCase();
+                const patientId = apt.patient?.id?.toString() || '';
+                const appointmentId = apt.id?.toString() || '';
+
+                return patientName.includes(query) ||
+                       patientId.includes(query) ||
+                       appointmentId.includes(query);
+            });
         }
 
         setFilteredAppointments(filtered);
@@ -422,6 +437,13 @@ function DoctorDashboard() {
                                 Past
                             </button>
                         </div>
+                        <input
+                            type="text"
+                            placeholder="Search by patient name or ID..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="search-input"
+                        />
                         <select
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
