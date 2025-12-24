@@ -84,6 +84,25 @@ public class AppointmentController {
     
     @PostMapping
     public ResponseEntity<Appointment> createAppointment(@RequestBody Appointment appointment) {
+        // Load full patient and doctor entities from database
+        if (appointment.getPatient() != null && appointment.getPatient().getId() != null) {
+            Optional<User> patient = userService.getUserById(appointment.getPatient().getId());
+            if (patient.isPresent()) {
+                appointment.setPatient(patient.get());
+            } else {
+                return ResponseEntity.badRequest().build();
+            }
+        }
+
+        if (appointment.getDoctor() != null && appointment.getDoctor().getId() != null) {
+            Optional<Doctor> doctor = doctorService.getDoctorById(appointment.getDoctor().getId());
+            if (doctor.isPresent()) {
+                appointment.setDoctor(doctor.get());
+            } else {
+                return ResponseEntity.badRequest().build();
+            }
+        }
+
         Appointment createdAppointment = appointmentService.createAppointment(appointment);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdAppointment);
     }

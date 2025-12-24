@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointment Confirmation</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 30px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 30px;
+        }
+        .greeting {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .info-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .info-row {
+            display: flex;
+            padding: 10px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            font-weight: 600;
+            color: #667eea;
+            min-width: 140px;
+            flex-shrink: 0;
+        }
+        .info-value {
+            color: #333;
+            flex-grow: 1;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .status-confirmed {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status-cancelled {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .status-completed {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        .appointment-date {
+            font-size: 20px;
+            font-weight: 700;
+            color: #667eea;
+            margin: 15px 0;
+        }
+        .doctor-info {
+            background-color: #e7f3ff;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+        .doctor-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .doctor-specialty {
+            color: #666;
+            font-size: 14px;
+        }
+        .notes-section {
+            background-color: #fff9e6;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+            border-left: 3px solid #ffc107;
+        }
+        .notes-title {
+            font-weight: 600;
+            color: #856404;
+            margin-bottom: 8px;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px 30px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 14px;
+        }
+        .footer p {
+            margin: 5px 0;
+        }
+        .divider {
+            height: 1px;
+            background-color: #e9ecef;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 th:text="${clinicName}">MOPS Clinic</h1>
+            <p>Appointment Confirmation</p>
+        </div>
+
+        <div class="content">
+            <div class="greeting">
+                Dear <strong th:text="${patientName}">Patient</strong>,
+            </div>
+
+            <p>Your appointment has been successfully scheduled. Here are the details:</p>
+
+            <div class="info-box">
+                <div class="appointment-date" th:text="${appointmentDate}">Monday, January 15, 2024 at 10:00 AM</div>
+
+                <div class="divider"></div>
+
+                <div class="doctor-info">
+                    <div class="doctor-name" th:text="${doctorName}">Dr. John Smith</div>
+                    <div class="doctor-specialty" th:text="${doctorSpecialty}">Cardiology</div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-label">Status:</div>
+                    <div class="info-value">
+                        <span th:class="${'status-badge status-' + #strings.toLowerCase(status)}" th:text="${status}">PENDING</span>
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-label">Created:</div>
+                    <div class="info-value" th:text="${createdAt}">January 10, 2024 at 03:45:12 PM</div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-label">Last Updated:</div>
+                    <div class="info-value" th:text="${updatedAt}">January 10, 2024 at 03:45:12 PM</div>
+                </div>
+            </div>
+
+            <div class="notes-section" th:if="${notes != 'No additional notes'}">
+                <div class="notes-title">Additional Notes:</div>
+                <div th:text="${notes}">Please arrive 15 minutes early for check-in.</div>
+            </div>
+
+            <p style="margin-top: 25px; color: #666;">
+                Please arrive 10-15 minutes before your scheduled appointment time. If you need to cancel or reschedule,
+                please contact us as soon as possible.
+            </p>
+        </div>
+
+        <div class="footer">
+            <p><strong th:text="${clinicName}">MOPS Clinic</strong></p>
+            <p>This is an automated message. Please do not reply to this email.</p>
+            <p style="margin-top: 10px; font-size: 12px;">
+                &copy; 2025 <span th:text="${clinicName}">MOPS Clinic</span>. All rights reserved.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

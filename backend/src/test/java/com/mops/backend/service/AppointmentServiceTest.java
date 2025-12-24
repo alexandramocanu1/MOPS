@@ -26,6 +26,9 @@ class AppointmentServiceTest {
     @Mock
     private DoctorService doctorService;
 
+    @Mock
+    private EmailService emailService;
+
     @InjectMocks
     private AppointmentService appointmentService;
 
@@ -34,17 +37,19 @@ class AppointmentServiceTest {
 
         Doctor doctor = new Doctor();
         doctor.setId(1L);
-        
+
         Appointment appointment = new Appointment();
         appointment.setDoctor(doctor);
-        
+
         when(appointmentRepository.save(any(Appointment.class))).thenAnswer(i -> i.getArguments()[0]);
+        doNothing().when(emailService).sendAppointmentConfirmation(any(Appointment.class));
 
         Appointment created = appointmentService.createAppointment(appointment);
 
         assertEquals("PENDING", created.getStatus());
         assertNotNull(created.getCreatedAt());
         verify(doctorService, times(1)).incrementPopularity(1L);
+        verify(emailService, times(1)).sendAppointmentConfirmation(any(Appointment.class));
     }
 
     @Test

@@ -14,20 +14,28 @@ import com.mops.backend.repository.AppointmentRepository;
 
 @Service
 public class AppointmentService {
-    
+
     @Autowired
     private AppointmentRepository appointmentRepository;
-    
+
     @Autowired
     private DoctorService doctorService;
+
+    @Autowired
+    private EmailService emailService;
     
     public Appointment createAppointment(Appointment appointment) {
         appointment.setCreatedAt(LocalDateTime.now());
         appointment.setStatus("PENDING");
-        
+
         doctorService.incrementPopularity(appointment.getDoctor().getId());
-        
-        return appointmentRepository.save(appointment);
+
+        Appointment savedAppointment = appointmentRepository.save(appointment);
+
+        // Send email notification to patient
+        emailService.sendAppointmentConfirmation(savedAppointment);
+
+        return savedAppointment;
     }
     
     public List<Appointment> getAllAppointments() {

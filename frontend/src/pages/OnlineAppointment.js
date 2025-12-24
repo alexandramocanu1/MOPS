@@ -101,7 +101,6 @@ function OnlineAppoinment() {
         try {
             const response = await fetch(`${API_BASE_URL}/availability/doctor/${doctorId}`);
             const data = await response.json();
-            console.log('Doctor availabilities:', data);
             setAvailabilities(data);
         } catch (err) {
             console.error('Error fetching availability:', err);
@@ -278,20 +277,13 @@ function OnlineAppoinment() {
         }
 
         const selectedDayOfWeek = getDayOfWeek(selectedDate);
-        console.log('Selected date:', selectedDate);
-        console.log('Day of week:', selectedDayOfWeek, getDayOfWeekName(selectedDayOfWeek));
-        console.log('All availabilities:', availabilities);
 
         const dayAvailabilities = availabilities.filter(availability => {
             const availabilityDay = parseInt(availability.dayOfWeek);
             const isActive = availability.isActive;
-            
-            console.log(`Checking availability: day=${availabilityDay}, isActive=${isActive}, matches=${availabilityDay === selectedDayOfWeek}`);
-            
             return availabilityDay === selectedDayOfWeek && isActive;
         });
 
-        console.log('Filtered availabilities for selected day:', dayAvailabilities);
         return dayAvailabilities;
     };
 
