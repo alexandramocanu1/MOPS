@@ -77,4 +77,52 @@ public class EmailService {
 
         return templateEngine.process("appointment-confirmation", context);
     }
+
+    public void sendAppointmentCancellation(Appointment appointment) {
+        // Validate that patient and email exist
+        if (appointment.getPatient() == null || appointment.getPatient().getEmail() == null) {
+            System.err.println("Cannot send cancellation email: Patient or patient email is null");
+            return;
+        }
+
+        try {
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(appointment.getPatient().getEmail());
+            helper.setSubject("Appointment Cancelled - " + clinicName);
+
+            String htmlContent = buildCancellationEmail(appointment);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(mimeMessage);
+
+            System.out.println("Appointment cancellation email sent to: " + appointment.getPatient().getEmail());
+        } catch (MessagingException e) {
+            System.err.println("Failed to send appointment cancellation email: " + e.getMessage());
+            e.printStackTrace();
+        } catch (Exception e) {
+            System.err.println("Unexpected error sending cancellation email: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private String buildCancellationEmail(Appointment appointment) {
+        Context context = new Context();
+
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("EEEE, MMMM dd, yyyy 'at' hh:mm a");
+        DateTimeFormatter timestampFormatter = DateTimeFormatter.ofPattern("MMMM dd, yyyy 'at' hh:mm:ss a");
+
+        context.setVariable("clinicName", clinicName);
+        context.setVariable("patientName", appointment.getPatient().getFirstName() + " " + appointment.getPatient().getLastName());
+        context.setVariable("appointmentDate", appointment.getAppointmentDate().format(dateFormatter));
+        context.setVariable("doctorName", "Dr. " + appointment.getDoctor().getUser().getFirstName() + " " + appointment.getDoctor().getUser().getLastName());
+        context.setVariable("doctorSpecialty", appointment.getDoctor().getSpecialty().getName());
+        context.setVariable("notes", appointment.getNotes() != null ? appointment.getNotes() : "No additional notes");
+        context.setVariable("createdAt", appointment.getCreatedAt().format(timestampFormatter));
+        context.setVariable("cancelledAt", appointment.getUpdatedAt() != null ? appointment.getUpdatedAt().format(timestampFormatter) : "N/A");
+
+        return templateEngine.process("appointment-cancellation", context);
+    }
 }

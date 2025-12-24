@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointment Cancelled</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 30px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 30px;
+        }
+        .greeting {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .alert-box {
+            background-color: #fff5f5;
+            border-left: 4px solid #ff6b6b;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .alert-icon {
+            font-size: 48px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .alert-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #c92a2a;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .info-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #868e96;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .info-row {
+            display: flex;
+            padding: 10px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            font-weight: 600;
+            color: #495057;
+            min-width: 140px;
+            flex-shrink: 0;
+        }
+        .info-value {
+            color: #333;
+            flex-grow: 1;
+        }
+        .appointment-date {
+            font-size: 20px;
+            font-weight: 700;
+            color: #495057;
+            margin: 15px 0;
+            text-align: center;
+        }
+        .doctor-info {
+            background-color: #e7f5ff;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+        .doctor-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .doctor-specialty {
+            color: #666;
+            font-size: 14px;
+        }
+        .notes-section {
+            background-color: #fff9e6;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+            border-left: 3px solid #ffc107;
+        }
+        .notes-title {
+            font-weight: 600;
+            color: #856404;
+            margin-bottom: 8px;
+        }
+        .action-box {
+            background-color: #e7f3ff;
+            padding: 20px;
+            border-radius: 4px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .action-title {
+            font-weight: 600;
+            color: #1971c2;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .action-text {
+            color: #495057;
+            font-size: 14px;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px 30px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 14px;
+        }
+        .footer p {
+            margin: 5px 0;
+        }
+        .divider {
+            height: 1px;
+            background-color: #e9ecef;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 th:text="${clinicName}">Med Ease</h1>
+            <p>Appointment Cancellation Notice</p>
+        </div>
+
+        <div class="content">
+            <div class="greeting">
+                Dear <strong th:text="${patientName}">Patient</strong>,
+            </div>
+
+            <div class="alert-box">
+                <div class="alert-title">Your Appointment Has Been Cancelled</div>
+                <p style="text-align: center; margin: 0; color: #666;">
+                    We regret to inform you that your scheduled appointment has been cancelled.
+                </p>
+            </div>
+
+            <p style="margin: 20px 0; color: #666;">
+                Here are the details of the cancelled appointment:
+            </p>
+
+            <div class="info-box">
+                <div class="appointment-date" th:text="${appointmentDate}">Monday, January 15, 2024 at 10:00 AM</div>
+
+                <div class="divider"></div>
+
+                <div class="doctor-info">
+                    <div class="doctor-name" th:text="${doctorName}">Dr. John Smith</div>
+                    <div class="doctor-specialty" th:text="${doctorSpecialty}">Cardiology</div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-label">Status:</div>
+                    <div class="info-value">
+                        <span style="color: #c92a2a; font-weight: 600;">CANCELLED</span>
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-label">Originally Created:</div>
+                    <div class="info-value" th:text="${createdAt}">January 10, 2024 at 03:45:12 PM</div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-label">Cancelled On:</div>
+                    <div class="info-value" th:text="${cancelledAt}">January 12, 2024 at 09:30:00 AM</div>
+                </div>
+            </div>
+
+            <div class="notes-section" th:if="${notes != 'No additional notes'}">
+                <div class="notes-title">Original Appointment Notes:</div>
+                <div th:text="${notes}">Regular checkup</div>
+            </div>
+
+            <div class="action-box">
+                <div class="action-title">Need to Reschedule?</div>
+                <div class="action-text">
+                    Please contact us or visit our website to book a new appointment at your convenience.
+                    We apologize for any inconvenience this may have caused.
+                </div>
+            </div>
+
+            <p style="margin-top: 25px; color: #666;">
+                If you have any questions or concerns about this cancellation, please don't hesitate to contact us.
+                We're here to help and look forward to serving you soon.
+            </p>
+        </div>
+
+        <div class="footer">
+            <p><strong th:text="${clinicName}">Med Ease</strong></p>
+            <p>This is an automated message. Please do not reply to this email.</p>
+            <p style="margin-top: 10px; font-size: 12px;">
+                &copy; 2025 <span th:text="${clinicName}">Med Ease</span>. All rights reserved.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

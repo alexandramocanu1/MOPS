@@ -89,7 +89,12 @@ public class AppointmentService {
     }
     
     public Appointment cancelAppointment(Long id) {
-        return updateAppointmentStatus(id, "CANCELLED");
+        Appointment appointment = updateAppointmentStatus(id, "CANCELLED");
+
+        // Send cancellation email notification to patient
+        emailService.sendAppointmentCancellation(appointment);
+
+        return appointment;
     }
     
     public Appointment completeAppointment(Long id) {
