@@ -69,6 +69,22 @@ class AppointmentServiceTest {
     }
 
     @Test
+    void cancelAppointment_ShouldChangeStatusAndSendEmail() {
+        Appointment app = new Appointment();
+        app.setId(1L);
+        app.setStatus("PENDING");
+
+        when(appointmentRepository.findById(1L)).thenReturn(Optional.of(app));
+        when(appointmentRepository.save(any(Appointment.class))).thenAnswer(i -> i.getArguments()[0]);
+
+        Appointment result = appointmentService.cancelAppointment(1L);
+
+        assertEquals("CANCELLED", result.getStatus());
+        verify(emailService, times(1)).sendAppointmentCancellation(result);
+        verify(appointmentRepository, times(1)).save(any(Appointment.class));
+    }
+
+    @Test
     void updateStatus_ShouldThrowExceptionWhenIdNotFound() {
 
         when(appointmentRepository.findById(99L)).thenReturn(Optional.empty());

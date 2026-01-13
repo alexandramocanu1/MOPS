@@ -28,6 +28,7 @@ class UserServiceTest {
     void createUser_ShouldSetCreatedAtDate() {
         User user = new User();
         user.setEmail("test@mops.ro");
+        
         when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArguments()[0]);
 
         User created = userService.createUser(user);
@@ -38,7 +39,6 @@ class UserServiceTest {
 
     @Test
     void login_ShouldReturnUserWhenCredentialsAreCorrect() {
- 
         User user = new User();
         user.setEmail("user@test.ro");
         user.setPassword("parola123");
@@ -61,12 +61,11 @@ class UserServiceTest {
 
         Optional<User> result = userService.login("user@test.ro", "parola_gresita");
 
-        assertTrue(result.isEmpty(), "Login should fail with wrong password");
+        assertTrue(result.isEmpty(), "Login should have failed due to incorrect password.");
     }
 
     @Test
     void updateUser_ShouldUpdateFieldsAndSetUpdatedAt() {
-
         User existingUser = new User();
         existingUser.setId(1L);
         existingUser.setFirstName("Maria");
@@ -82,6 +81,25 @@ class UserServiceTest {
 
         assertEquals("Ion", result.getFirstName());
         assertEquals("maria@test.ro", result.getEmail());
-        assertNotNull(result.getUpdatedAt(), "UpdatedAt should be set automatically");
+        assertNotNull(result.getUpdatedAt(), "UpdatedAt should be set on update.");
+    }
+
+    @Test
+    void updateUser_ShouldThrowExceptionWhenNotFound() {
+        when(userRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> {
+            userService.updateUser(99L, new User());
+        });
+    }
+
+    @Test
+    void emailExists_ShouldReturnTrueWhenEmailIsInDatabase() {
+        when(userRepository.existsByEmail("exist@mops.ro")).thenReturn(true);
+
+        boolean exists = userService.emailExists("exist@mops.ro");
+
+        assertTrue(exists);
+        verify(userRepository).existsByEmail("exist@mops.ro");
     }
 }

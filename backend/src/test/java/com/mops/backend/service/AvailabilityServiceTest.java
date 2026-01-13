@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import java.time.LocalTime;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
@@ -18,14 +19,28 @@ import com.mops.backend.repository.AvailabilityRepository;
 @ExtendWith(MockitoExtension.class)
 class AvailabilityServiceTest {
     
-     @Mock
+    @Mock
     private AvailabilityRepository availabilityRepository;
 
     @InjectMocks
     private AvailabilityService availabilityService;
 
     @Test
-    void createAvailability_ShouldToggleStatus() {
+    void createAvailability_ShouldReturnSavedAvailability() {
+        Availability availability = new Availability();
+        availability.setDayOfWeek("Monday");
+        
+        when(availabilityRepository.save(any(Availability.class))).thenReturn(availability);
+
+        Availability saved = availabilityService.createAvailability(availability);
+
+        assertNotNull(saved);
+        assertEquals("Monday", saved.getDayOfWeek());
+        verify(availabilityRepository, times(1)).save(availability);
+    }
+
+    @Test
+    void toggleAvailabilityStatus_ShouldInvertBooleanValue() {
         Availability availability = new Availability();
         availability.setId(1L);
         availability.setIsActive(true);
@@ -35,26 +50,24 @@ class AvailabilityServiceTest {
 
         Availability result = availabilityService.toggleAvailabilityStatus(1L);
 
-        assertFalse(result.getIsActive(), "Status should be toggled to false");
+        assertFalse(result.getIsActive(), "Status should go to false");
 
-        //act again to toggle back
         when(availabilityRepository.findById(1L)).thenReturn(Optional.of(result));
         Availability resultBack = availabilityService.toggleAvailabilityStatus(1L);
 
-        assertTrue(resultBack.getIsActive(), "Status should be toggled back to true");
+        assertTrue(resultBack.getIsActive(), "Status should go back to true");
     }
     
     @Test
     void updateAvailability_ShouldChangeAllFields() {
-
         Availability existing = new Availability();
         existing.setId(1L);
         existing.setDayOfWeek("Monday");
 
         Availability details = new Availability();
         details.setDayOfWeek("Friday");
-        details.setStartTime(java.time.LocalTime.of(9, 0));
-        details.setEndTime(java.time.LocalTime.of(17, 0));
+        details.setStartTime(LocalTime.of(9, 0));
+        details.setEndTime(LocalTime.of(17, 0));
         details.setIsActive(true);
 
         when(availabilityRepository.findById(1L)).thenReturn(Optional.of(existing));
@@ -63,16 +76,27 @@ class AvailabilityServiceTest {
         Availability updated = availabilityService.updateAvailability(1L, details);
 
         assertEquals("Friday", updated.getDayOfWeek());
-        assertEquals(java.time.LocalTime.of(9, 0), updated.getStartTime());
+        assertEquals(LocalTime.of(9, 0), updated.getStartTime());
+        assertEquals(LocalTime.of(17, 0), updated.getEndTime());
         assertTrue(updated.getIsActive());
+        verify(availabilityRepository, times(1)).save(any(Availability.class));
+    }
+
+    @Test
+    void updateAvailability_ShouldThrowException_WhenNotFound() {
+        when(availabilityRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> {
+            availabilityService.updateAvailability(99L, new Availability());
+        });
     }
 
     @Test
     void deleteAvailability_ShouldCallRepository() {
+        Long idToDelete = 1L;
+        
+        availabilityService.deleteAvailability(idToDelete);
 
-        availabilityService.deleteAvailability(1L);
-
-        verify(availabilityRepository, times(1)).deleteById(1L);
+        verify(availabilityRepository, times(1)).deleteById(idToDelete);
     }
 }
-
