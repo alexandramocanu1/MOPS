@@ -93,7 +93,11 @@ function AdminDashboard() {
                 totalSpecialties: specialtiesData.length || 0
             });
 
-            setRecentAppointments(appointments.slice(0, 10));
+            // Sort by createdAt descending to show most recent appointments first
+            const sortedAppointments = [...appointments].sort((a, b) =>
+                new Date(b.createdAt) - new Date(a.createdAt)
+            );
+            setRecentAppointments(sortedAppointments.slice(0, 10));
             setDoctors(doctorsData);
             setSpecialties(specialtiesData);
             setLoading(false);
@@ -428,7 +432,8 @@ function AdminDashboard() {
                                     <th>ID</th>
                                     <th>Patient</th>
                                     <th>Doctor</th>
-                                    <th>Date & Time</th>
+                                    <th>Appointment Date</th>
+                                    <th>Created At</th>
                                     <th>Status</th>
                                     <th>Notes</th>
                                     <th>Actions</th>
@@ -451,6 +456,7 @@ function AdminDashboard() {
                                                 : 'N/A')}
                                         </td>
                                         <td>{formatDateTime(appointment.appointmentDate)}</td>
+                                        <td>{formatDateTime(appointment.createdAt)}</td>
                                         <td>
                                             <span className={`status-badge ${getStatusBadgeClass(appointment.status)}`}>
                                                 {appointment.status}

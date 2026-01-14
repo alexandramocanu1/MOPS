@@ -126,8 +126,9 @@ public class AppointmentService {
         appointment.setAppointmentDate(appointmentDetails.getAppointmentDate());
         appointment.setNotes(appointmentDetails.getNotes());
         appointment.setStatus(appointmentDetails.getStatus());
-        // appointment.setCost(appointmentDetails.getCost());
-        
+        appointment.setCost(appointmentDetails.getCost());
+        appointment.setUpdatedAt(LocalDateTime.now());
+
         return appointmentRepository.save(appointment);
     }
 }

@@ -72,6 +72,9 @@ function DoctorsPage() {
             );
         }
 
+        // Always sort by popularity (highest first)
+        filtered.sort((a, b) => b.popularity - a.popularity);
+
         setFilteredDoctors(filtered);
     };
 

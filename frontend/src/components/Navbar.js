@@ -83,9 +83,15 @@ function Navbar() {
   const renderDoctorMenu = () => (
     <>
       <div className="navbar-menu">
-        
-        <Link 
-          to="/doctor/dashboard" 
+        <Link
+          to="/"
+          className={`navbar-link ${location.pathname === '/' ? 'active' : ''}`}
+        >
+          Home
+        </Link>
+
+        <Link
+          to="/doctor/dashboard"
           className={`navbar-link ${location.pathname === '/doctor/dashboard' ? 'active' : ''}`}
         >
           Dashboard
@@ -108,16 +114,22 @@ function Navbar() {
   const renderAdminMenu = () => (
     <>
       <div className="navbar-menu">
-        
-        <Link 
-          to="/admin/dashboard" 
+        <Link
+          to="/"
+          className={`navbar-link ${location.pathname === '/' ? 'active' : ''}`}
+        >
+          Home
+        </Link>
+
+        <Link
+          to="/admin/dashboard"
           className={`navbar-link ${location.pathname === '/admin/dashboard' ? 'active' : ''}`}
         >
           Dashboard
         </Link>
 
-        <Link 
-          to="/admin/reports" 
+        <Link
+          to="/admin/reports"
           className={`navbar-link ${location.pathname === '/admin/reports' ? 'active' : ''}`}
         >
           Reports

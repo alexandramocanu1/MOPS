@@ -35,7 +35,10 @@ public class Appointment {
     
     @Column
     private String notes;
-    
+
+    @Column
+    private Double cost;
+
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
     
@@ -69,7 +72,10 @@ public class Appointment {
     
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
-    
+
+    public Double getCost() { return cost; }
+    public void setCost(Double cost) { this.cost = cost; }
+
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     
