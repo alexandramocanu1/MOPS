@@ -4,8 +4,11 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -24,38 +27,90 @@ class SpecialtyServiceTest {
     @InjectMocks
     private SpecialtyService specialtyService;
 
+    private Specialty specialty;
+
+    @BeforeEach
+    void setUp() {
+        specialty = new Specialty();
+        specialty.setId(1L);
+        specialty.setName("Cardiology");
+        specialty.setDescription("Heart and cardiovascular system");
+    }
+
     @Test
     void createSpecialty_ShouldSaveAndReturnSpecialty() {
-        Specialty specialty = new Specialty();
-        specialty.setName("Cardiologie");
-        
         when(specialtyRepository.save(any(Specialty.class))).thenReturn(specialty);
 
         Specialty created = specialtyService.createSpecialty(specialty);
 
         assertNotNull(created);
-        assertEquals("Cardiologie", created.getName());
+        assertEquals("Cardiology", created.getName());
         verify(specialtyRepository, times(1)).save(specialty);
     }
 
     @Test
+    void getAllSpecialties_ShouldReturnAllSpecialties() {
+        List<Specialty> specialties = Arrays.asList(specialty, new Specialty());
+        when(specialtyRepository.findAll()).thenReturn(specialties);
+
+        List<Specialty> result = specialtyService.getAllSpecialties();
+
+        assertEquals(2, result.size());
+        verify(specialtyRepository, times(1)).findAll();
+    }
+
+    @Test
+    void getSpecialtyById_ShouldReturnSpecialty() {
+        when(specialtyRepository.findById(1L)).thenReturn(Optional.of(specialty));
+
+        Optional<Specialty> result = specialtyService.getSpecialtyById(1L);
+
+        assertTrue(result.isPresent());
+        assertEquals(1L, result.get().getId());
+    }
+
+    @Test
+    void getSpecialtyById_ShouldReturnEmptyWhenNotFound() {
+        when(specialtyRepository.findById(99L)).thenReturn(Optional.empty());
+
+        Optional<Specialty> result = specialtyService.getSpecialtyById(99L);
+
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void getSpecialtyByName_ShouldReturnSpecialty() {
+        when(specialtyRepository.findByName("Cardiology")).thenReturn(Optional.of(specialty));
+
+        Optional<Specialty> result = specialtyService.getSpecialtyByName("Cardiology");
+
+        assertTrue(result.isPresent());
+        assertEquals("Cardiology", result.get().getName());
+    }
+
+    @Test
+    void getSpecialtyByName_ShouldReturnEmptyWhenNotFound() {
+        when(specialtyRepository.findByName("Unknown")).thenReturn(Optional.empty());
+
+        Optional<Specialty> result = specialtyService.getSpecialtyByName("Unknown");
+
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
     void updateSpecialty_ShouldModifyExistingData() {
-        Specialty existing = new Specialty();
-        existing.setId(1L);
-        existing.setName("Vechi");
-
         Specialty newDetails = new Specialty();
-        newDetails.setName("Nou");
-        newDetails.setDescription("Descriere noua");
+        newDetails.setName("Neurology");
+        newDetails.setDescription("Brain and nervous system");
 
-        when(specialtyRepository.findById(1L)).thenReturn(Optional.of(existing));
+        when(specialtyRepository.findById(1L)).thenReturn(Optional.of(specialty));
         when(specialtyRepository.save(any(Specialty.class))).thenAnswer(i -> i.getArguments()[0]);
 
         Specialty updated = specialtyService.updateSpecialty(1L, newDetails);
 
-        assertEquals("Nou", updated.getName());
-        assertEquals("Descriere noua", updated.getDescription());
-        verify(specialtyRepository).save(existing);
+        assertEquals("Neurology", updated.getName());
+        assertEquals("Brain and nervous system", updated.getDescription());
+        verify(specialtyRepository).save(specialty);
     }
 
     @Test
@@ -65,40 +120,35 @@ class SpecialtyServiceTest {
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             specialtyService.updateSpecialty(99L, new Specialty());
         });
-        
+
         assertTrue(exception.getMessage().contains("Specialty not found"));
         verify(specialtyRepository, never()).save(any());
     }
 
     @Test
-    void specialtyExists_ShouldReturnTrueIfNameExists() {
-        when(specialtyRepository.existsByName("Neurologie")).thenReturn(true);
+    void deleteSpecialty_ShouldInvokeRepositoryDelete() {
+        specialtyService.deleteSpecialty(1L);
 
-        boolean exists = specialtyService.specialtyExists("Neurologie");
+        verify(specialtyRepository, times(1)).deleteById(1L);
+    }
+
+    @Test
+    void specialtyExists_ShouldReturnTrueIfNameExists() {
+        when(specialtyRepository.existsByName("Cardiology")).thenReturn(true);
+
+        boolean exists = specialtyService.specialtyExists("Cardiology");
 
         assertTrue(exists);
-        verify(specialtyRepository, times(1)).existsByName("Neurologie");
+        verify(specialtyRepository, times(1)).existsByName("Cardiology");
     }
 
     @Test
-    void deleteSpecialty_ShouldInvokeRepositoryDelete() {
-        Long idToDelete = 1L;
-        
-        specialtyService.deleteSpecialty(idToDelete);
+    void specialtyExists_ShouldReturnFalseIfNameDoesNotExist() {
+        when(specialtyRepository.existsByName("Unknown")).thenReturn(false);
 
-        verify(specialtyRepository, times(1)).deleteById(idToDelete);
-    }
+        boolean exists = specialtyService.specialtyExists("Unknown");
 
-    @Test
-    void getSpecialtyByName_ShouldReturnSpecialty() {
-        Specialty s = new Specialty();
-        s.setName("ORL");
-        
-        when(specialtyRepository.findByName("ORL")).thenReturn(Optional.of(s));
-
-        Optional<Specialty> result = specialtyService.getSpecialtyByName("ORL");
-
-        assertTrue(result.isPresent());
-        assertEquals("ORL", result.get().getName());
+        assertFalse(exists);
+        verify(specialtyRepository, times(1)).existsByName("Unknown");
     }
 }

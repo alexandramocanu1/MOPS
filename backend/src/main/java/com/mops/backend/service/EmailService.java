@@ -31,8 +31,8 @@ public class EmailService {
 
     public void sendAppointmentConfirmation(Appointment appointment) {
         // Validate that patient and email exist
-        if (appointment.getPatient() == null || appointment.getPatient().getEmail() == null) {
-            System.err.println("Cannot send email: Patient or patient email is null");
+        if (appointment.getPatient() == null || appointment.getPatient().getEmail() == null || appointment.getPatient().getEmail().isEmpty()) {
+            System.err.println("Cannot send email: Patient or patient email is null or empty");
             return;
         }
 
@@ -80,8 +80,8 @@ public class EmailService {
 
     public void sendAppointmentCancellation(Appointment appointment) {
         // Validate that patient and email exist
-        if (appointment.getPatient() == null || appointment.getPatient().getEmail() == null) {
-            System.err.println("Cannot send cancellation email: Patient or patient email is null");
+        if (appointment.getPatient() == null || appointment.getPatient().getEmail() == null || appointment.getPatient().getEmail().isEmpty()) {
+            System.err.println("Cannot send cancellation email: Patient or patient email is null or empty");
             return;
         }
 
