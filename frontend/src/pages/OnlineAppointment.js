@@ -60,6 +60,8 @@ function OnlineAppoinment() {
         }
     }, [selectedDoctor]);
 
+    
+
     const fetchInitialData = async () => {
         try {
             setLoading(true);
@@ -163,15 +165,8 @@ function OnlineAppoinment() {
                 });
 
                 if (response.ok) {
-                    const newAppointment = await response.json();
-                    navigate('/payment', { 
-                        state: { 
-                            appointmentId: newAppointment.id,
-                            amount: 150,
-                            doctorName: selectedDoctor.user?.fullName || 
-                                       `${selectedDoctor.user?.firstName} ${selectedDoctor.user?.lastName}`
-                        } 
-                    });
+                    await response.json();
+                    window.location.href = 'https://buy.stripe.com/test_28EcN432ycud6Km8YjcjS00';
                 } else {
                     setError('Eroare la crearea programării.');
                 }
@@ -266,26 +261,35 @@ function OnlineAppoinment() {
     };
 
     const getDayOfWeekName = (dayNumber) => {
-        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-        return days[dayNumber];
-    };
+    const days = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+    return days[dayNumber];
+};
 
     const getAvailableTimesForDate = () => {
-        if (!selectedDate || !availabilities.length) {
-            console.log('No date selected or no availabilities');
-            return [];
-        }
+    if (!selectedDate || !availabilities.length) {
+        console.log('No date selected or no availabilities');
+        return [];
+    }
 
-        const selectedDayOfWeek = getDayOfWeek(selectedDate);
+    const selectedDayOfWeek = getDayOfWeek(selectedDate);
+    const selectedDayName = getDayOfWeekName(selectedDayOfWeek).toUpperCase(); 
+    
+    console.log('Selected day number:', selectedDayOfWeek);
+    console.log('Selected day name:', selectedDayName);
+    console.log('All availabilities:', availabilities);
 
-        const dayAvailabilities = availabilities.filter(availability => {
-            const availabilityDay = parseInt(availability.dayOfWeek);
-            const isActive = availability.isActive;
-            return availabilityDay === selectedDayOfWeek && isActive;
-        });
+    const dayAvailabilities = availabilities.filter(availability => {
+        const availabilityDay = availability.dayOfWeek; 
+        const isActive = availability.isActive;
+        
+        console.log(`Comparing: "${availabilityDay}" === "${selectedDayName}" ? ${availabilityDay === selectedDayName}, Active: ${isActive}`);
+        
+        return availabilityDay === selectedDayName && isActive;
+    });
 
-        return dayAvailabilities;
-    };
+    console.log('Found availabilities:', dayAvailabilities);
+    return dayAvailabilities;
+};
 
     if (!user) {
         return null;
