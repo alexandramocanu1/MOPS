@@ -25,14 +25,23 @@ public class ReportService {
     @Autowired
     private DoctorRepository doctorRepository;
 
-    public MonthlyReportDTO generateReport(int year, int month, boolean isAnnual) {
+    public MonthlyReportDTO generateReport(int year, int month, boolean isAnnual, int months) {
         LocalDateTime startDate;
         LocalDateTime endDate;
 
         if (isAnnual) {
             startDate = LocalDateTime.of(year, 1, 1, 0, 0, 0);
             endDate = LocalDateTime.of(year, 12, 31, 23, 59, 59);
+        } else if (months > 0) {
+            // For multi-month reports (3 or 6 months)
+            YearMonth yearMonth = YearMonth.of(year, month);
+            startDate = yearMonth.atDay(1).atStartOfDay();
+
+            // Add the specified number of months
+            YearMonth endYearMonth = yearMonth.plusMonths(months - 1);
+            endDate = endYearMonth.atEndOfMonth().atTime(23, 59, 59);
         } else {
+            // For single month reports
             YearMonth yearMonth = YearMonth.of(year, month);
             startDate = yearMonth.atDay(1).atStartOfDay();
             endDate = yearMonth.atEndOfMonth().atTime(23, 59, 59);

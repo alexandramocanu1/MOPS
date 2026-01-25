@@ -385,28 +385,28 @@ function AdminDashboard() {
                                                     className="btn-edit"
                                                     title="Edit"
                                                 >
-                                                    ✏️
+                                                    Edit
                                                 </button>
                                                 <button
                                                     onClick={() => handleSetAvailability(doctor)}
                                                     className="btn-availability"
                                                     title="Set Availability"
                                                 >
-                                                    📅
+                                                    Availability
                                                 </button>
                                                 <button
                                                     onClick={() => handleToggleDoctorStatus(doctor.id)}
                                                     className="btn-toggle"
                                                     title={doctor.isActive ? 'Deactivate' : 'Activate'}
                                                 >
-                                                    {doctor.isActive ? '⏸' : '▶'}
+                                                    {doctor.isActive ? 'Deactivate' : 'Activate'}
                                                 </button>
                                                 <button
                                                     onClick={() => handleDeleteDoctor(doctor.id)}
                                                     className="btn-delete"
                                                     title="Delete"
                                                 >
-                                                    🗑
+                                                    Delete
                                                 </button>
                                             </div>
                                         </td>

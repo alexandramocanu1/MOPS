@@ -549,13 +549,13 @@ function DoctorDashboard() {
                                                         onClick={() => handleViewReport(appointment)}
                                                         className="btn-view-report"
                                                     >
-                                                        👁 View Report
+                                                        View Report
                                                     </button>
                                                     <button
                                                         onClick={() => handleEditReport(appointment)}
                                                         className="btn-edit-report"
                                                     >
-                                                        ✏️ Edit Report
+                                                        Edit Report
                                                     </button>
                                                 </>
                                             ) : (
@@ -563,14 +563,14 @@ function DoctorDashboard() {
                                                     onClick={() => handleGenerateReport(appointment)}
                                                     className="btn-generate-report"
                                                 >
-                                                    📋 Generate Medical Report
+                                                    Generate Medical Report
                                                 </button>
                                             )}
                                             <button
                                                 onClick={() => handleMarkAsPending(appointment.id)}
                                                 className="btn-mark-pending"
                                             >
-                                                ← Mark as Pending
+                                                Mark as Pending
                                             </button>
                                         </>
                                     )}

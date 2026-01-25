@@ -39,12 +39,20 @@ function ReportsPage() {
         setLoading(true);
         setError(null);
         try {
+            let params = {
+                year: selectedYear,
+                month: reportType === 'monthly' ? selectedMonth : 1,
+                isAnnual: reportType === 'annual'
+            };
+
+            if (reportType === 'quarterly') {
+                params.months = 3;
+            } else if (reportType === 'semiannual') {
+                params.months = 6;
+            }
+
             const response = await axios.get('http://localhost:7000/api/reports/generate', {
-                params: {
-                    year: selectedYear,
-                    month: reportType === 'monthly' ? selectedMonth : 1,
-                    isAnnual: reportType === 'annual'
-                }
+                params
             });
             setReportData(response.data);
         } catch (err) {
@@ -57,7 +65,12 @@ function ReportsPage() {
 
     const handlePrint = useReactToPrint({
         contentRef: printRef,
-        documentTitle: `${reportType === 'monthly' ? 'Monthly' : 'Annual'}_Report_${selectedYear}`,
+        documentTitle: `${
+            reportType === 'monthly' ? 'Monthly' :
+            reportType === 'quarterly' ? '3_Months' :
+            reportType === 'semiannual' ? '6_Months' :
+            'Annual'
+        }_Report_${selectedYear}`,
     });
 
     const getMonthName = (monthNumber) => {
@@ -87,9 +100,6 @@ function ReportsPage() {
     const renderVisualizations = () => {
         if (!reportData) return null;
 
-        // --- DATA PREPARATION ---
-
-        // 1. Status Data (for Summary View)
         const statusData = [
             { name: 'Completed', value: reportData.completedAppointments, color: '#4caf50' },
             { name: 'Confirmed', value: reportData.confirmedAppointments, color: '#2196f3' },
@@ -98,7 +108,6 @@ function ReportsPage() {
             { name: 'Pending', value: reportData.pendingAppointments, color: '#9e9e9e' },
         ].filter(d => d.value > 0);
 
-        // 2. Specialty Data (Aggregating doctor stats by specialty for Treemap)
         const specialtyMap = reportData.doctorStatistics.reduce((acc, doc) => {
             acc[doc.specialty] = (acc[doc.specialty] || 0) + doc.totalAppointments;
             return acc;
@@ -108,7 +117,6 @@ function ReportsPage() {
             value: specialtyMap[key]
         }));
 
-        // 3. Performance Radar Data (For the top performing doctor)
         const topDoc = reportData.doctorStatistics[0];
         const radarData = topDoc ? [
             { subject: 'Total', A: topDoc.totalAppointments, fullMark: reportData.totalAppointments },
@@ -119,18 +127,16 @@ function ReportsPage() {
 
         return (
             <div className="visualizations-wrapper">
-                {/* ADMIN VIEW SELECTOR */}
                 <div className="view-mode-selector">
-                    <button className={`btn-view ${displayMode === 'summary' ? 'active' : ''}`} onClick={() => setDisplayMode('summary')}>📊 Status</button>
-                    <button className={`btn-view ${displayMode === 'trends' ? 'active' : ''}`} onClick={() => setDisplayMode('trends')}>📈 Trends</button>
-                    <button className={`btn-view ${displayMode === 'comparative' ? 'active' : ''}`} onClick={() => setDisplayMode('comparative')}>👨‍⚕️ Doctors</button>
-                    <button className={`btn-view ${displayMode === 'efficiency' ? 'active' : ''}`} onClick={() => setDisplayMode('efficiency')}>🎯 Efficiency</button>
-                    <button className={`btn-view ${displayMode === 'specialties' ? 'active' : ''}`} onClick={() => setDisplayMode('specialties')}>🏥 Specialties</button>
+                    <button className={`btn-view ${displayMode === 'summary' ? 'active' : ''}`} onClick={() => setDisplayMode('summary')}>Status</button>
+                    <button className={`btn-view ${displayMode === 'trends' ? 'active' : ''}`} onClick={() => setDisplayMode('trends')}>Trends</button>
+                    <button className={`btn-view ${displayMode === 'comparative' ? 'active' : ''}`} onClick={() => setDisplayMode('comparative')}>Doctors</button>
+                    <button className={`btn-view ${displayMode === 'efficiency' ? 'active' : ''}`} onClick={() => setDisplayMode('efficiency')}>Efficiency</button>
+                    <button className={`btn-view ${displayMode === 'specialties' ? 'active' : ''}`} onClick={() => setDisplayMode('specialties')}>Specialties</button>
                 </div>
 
                 <div className="chart-display-area">
 
-                    {/* 1. SUMMARY MODE: Distribution & Raw Volumes */}
                     {displayMode === 'summary' && (
                         <div className="charts-grid">
                             <div className="chart-card">
@@ -161,7 +167,6 @@ function ReportsPage() {
                         </div>
                     )}
 
-                    {/* 2. TRENDS MODE: Density and Growth */}
                     {displayMode === 'trends' && (
                         <div>
                             <h4>Clinical Activity Density</h4>
@@ -183,7 +188,6 @@ function ReportsPage() {
                         </div>
                     )}
 
-                    {/* 3. COMPARATIVE MODE: Performance Ratios */}
                     {displayMode === 'comparative' && (
                         <div>
                             <h4>Doctor Success vs. Cancelation Rates</h4>
@@ -286,6 +290,14 @@ function ReportsPage() {
                             onClick={() => setReportType('monthly')}
                         >Monthly Report</button>
                         <button
+                            className={`btn-toggle ${reportType === 'quarterly' ? 'active' : ''}`}
+                            onClick={() => setReportType('quarterly')}
+                        >3 Months Report</button>
+                        <button
+                            className={`btn-toggle ${reportType === 'semiannual' ? 'active' : ''}`}
+                            onClick={() => setReportType('semiannual')}
+                        >6 Months Report</button>
+                        <button
                             className={`btn-toggle ${reportType === 'annual' ? 'active' : ''}`}
                             onClick={() => setReportType('annual')}
                         >Annual Report</button>
@@ -339,11 +351,14 @@ function ReportsPage() {
                             <h2>
                                 {reportType === 'monthly'
                                     ? `Monthly Report - ${getMonthName(reportData.month)} ${reportData.year}`
+                                    : reportType === 'quarterly'
+                                    ? `Quarterly Report (3 Months) - ${getMonthName(reportData.month)} to ${getMonthName((reportData.month + 2) % 12 || 12)} ${reportData.year}`
+                                    : reportType === 'semiannual'
+                                    ? `Semi-Annual Report (6 Months) - ${getMonthName(reportData.month)} to ${getMonthName((reportData.month + 5) % 12 || 12)} ${reportData.year}`
                                     : `Annual Report - ${reportData.year}`}
                             </h2>
                             <p className="report-date">Generated on: {new Date().toLocaleDateString()}</p>
                         </div>
-                        {/* Render charts */}
                         {renderVisualizations()}
 
                         <div className="report-section">
