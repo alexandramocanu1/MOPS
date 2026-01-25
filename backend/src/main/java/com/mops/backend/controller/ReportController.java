@@ -14,11 +14,13 @@ public class ReportController {
     @Autowired
     private ReportService reportService;
 
-    @GetMapping("/monthly")
-    public ResponseEntity<MonthlyReportDTO> getMonthlyReport(
+    @GetMapping("/generate")
+    public ResponseEntity<MonthlyReportDTO> getReport(
             @RequestParam int year,
-            @RequestParam int month) {
-        MonthlyReportDTO report = reportService.generateMonthlyReport(year, month);
+            @RequestParam(required = false, defaultValue = "1") int month,
+            @RequestParam boolean isAnnual) {
+    
+        MonthlyReportDTO report = reportService.generateReport(year, month, isAnnual);
         return ResponseEntity.ok(report);
     }
 }

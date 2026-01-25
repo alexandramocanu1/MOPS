@@ -243,7 +243,6 @@ textarea.form-control {
     padding: 0 4px;
 }
 
-/* Responsive design */
 @media (max-width: 768px) {
     .modal-content.medical-report-modal {
         max-width: 100%;
@@ -271,4 +270,5 @@ textarea.form-control {
     .btn-submit {
         width: 100%;
     }
+    
 }

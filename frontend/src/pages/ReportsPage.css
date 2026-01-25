@@ -282,7 +282,6 @@
     padding: 2rem;
 }
 
-/* Print styles */
 @media print {
     .reports-page {
         background: white;
@@ -319,7 +318,6 @@
     }
 }
 
-/* Responsive design */
 @media (max-width: 768px) {
     .reports-page {
         padding: 1rem;
@@ -367,5 +365,107 @@
     .doctor-stats-table th,
     .doctor-stats-table td {
         padding: 0.75rem 0.5rem;
+    }
+    
+}
+.visualizations-wrapper {
+    margin-top: 1rem;
+    animation: fadeIn 0.4s ease-out;
+}
+
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+}
+
+.chart-card {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 10px;
+    border: 1px solid #e9ecef;
+    transition: border-color 0.3s ease;
+}
+
+.chart-card:hover {
+    border-color: #667eea;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.report-type-selector, 
+.view-mode-selector {
+    display: flex;
+    background: #f8f9fa; 
+    padding: 6px;
+    border-radius: 12px;
+    width: fit-content;
+    border: 1px solid #e9ecef;
+    margin-bottom: 1.5rem;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.03);
+}
+
+.btn-toggle, 
+.btn-view {
+    padding: 0.7rem 1.4rem;
+    border: none;
+    background: transparent;
+    color: #666;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 9px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-toggle.active, 
+.btn-view.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.25);
+}
+
+.btn-toggle:hover:not(.active), 
+.btn-view:hover:not(.active) {
+    background: #ffffff;
+    color: #667eea;
+    transform: translateY(-1px);
+}
+
+.chart-display-area {
+    background: white;
+    padding: 2.5rem;
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+    border-left: 5px solid #764ba2; 
+    margin-bottom: 2rem;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+}
+
+.chart-display-area h4 {
+    color: #333;
+    font-size: 1.3rem;
+    margin-bottom: 2rem;
+    font-weight: 700;
+}
+
+@media print {
+    .report-type-selector,
+    .view-mode-selector,
+    .btn-toggle,
+    .btn-view {
+        display: none !important;
+    }
+
+    .chart-display-area {
+        border: 1px solid #e9ecef !important;
+        border-left: 5px solid #764ba2 !important;
+        box-shadow: none !important;
     }
 }

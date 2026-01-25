@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.YearMonth;
-import java.util.ArrayList;
+//import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -25,89 +25,71 @@ public class ReportService {
     @Autowired
     private DoctorRepository doctorRepository;
 
-    public MonthlyReportDTO generateMonthlyReport(int year, int month) {
-        // Calculate start and end of the month
-        YearMonth yearMonth = YearMonth.of(year, month);
-        LocalDateTime startDate = yearMonth.atDay(1).atStartOfDay();
-        LocalDateTime endDate = yearMonth.atEndOfMonth().atTime(23, 59, 59);
+    public MonthlyReportDTO generateReport(int year, int month, boolean isAnnual) {
+        LocalDateTime startDate;
+        LocalDateTime endDate;
 
-        // Get all appointments for the month
-        List<Appointment> appointments = appointmentRepository.findAll().stream()
-                .filter(app -> app.getAppointmentDate().isAfter(startDate.minusSeconds(1))
-                        && app.getAppointmentDate().isBefore(endDate.plusSeconds(1)))
-                .collect(Collectors.toList());
-
-        // Calculate overall statistics
-        int totalAppointments = appointments.size();
-        int confirmedAppointments = (int) appointments.stream()
-                .filter(app -> "CONFIRMED".equals(app.getStatus()))
-                .count();
-        int cancelledAppointments = (int) appointments.stream()
-                .filter(app -> "CANCELLED".equals(app.getStatus()))
-                .count();
-        int completedAppointments = (int) appointments.stream()
-                .filter(app -> "COMPLETED".equals(app.getStatus()))
-                .count();
-        int pendingAppointments = (int) appointments.stream()
-                .filter(app -> "PENDING".equals(app.getStatus()))
-                .count();
-        int rejectedAppointments = (int) appointments.stream()
-                .filter(app -> "REJECTED".equals(app.getStatus()))
-                .count();
-
-        // Group appointments by doctor and calculate statistics
-        Map<Doctor, List<Appointment>> appointmentsByDoctor = appointments.stream()
-                .collect(Collectors.groupingBy(Appointment::getDoctor));
-
-        List<DoctorStatisticsDTO> doctorStatistics = new ArrayList<>();
-        for (Map.Entry<Doctor, List<Appointment>> entry : appointmentsByDoctor.entrySet()) {
-            Doctor doctor = entry.getKey();
-            List<Appointment> doctorAppointments = entry.getValue();
-
-            int doctorTotal = doctorAppointments.size();
-            int doctorConfirmed = (int) doctorAppointments.stream()
-                    .filter(app -> "CONFIRMED".equals(app.getStatus()))
-                    .count();
-            int doctorCancelled = (int) doctorAppointments.stream()
-                    .filter(app -> "CANCELLED".equals(app.getStatus()))
-                    .count();
-            int doctorCompleted = (int) doctorAppointments.stream()
-                    .filter(app -> "COMPLETED".equals(app.getStatus()))
-                    .count();
-            long uniquePatients = doctorAppointments.stream()
-                    .map(app -> app.getPatient().getId())
-                    .distinct()
-                    .count();
-
-            String specialtyName = doctor.getSpecialty() != null ?
-                    doctor.getSpecialty().getName() : "N/A";
-
-            DoctorStatisticsDTO doctorStats = new DoctorStatisticsDTO(
-                    doctor.getId(),
-                    doctor.getUser().getFullName(),
-                    specialtyName,
-                    doctorTotal,
-                    (int) uniquePatients,
-                    doctorConfirmed,
-                    doctorCancelled,
-                    doctorCompleted
-            );
-            doctorStatistics.add(doctorStats);
+        if (isAnnual) {
+            startDate = LocalDateTime.of(year, 1, 1, 0, 0, 0);
+            endDate = LocalDateTime.of(year, 12, 31, 23, 59, 59);
+        } else {
+            YearMonth yearMonth = YearMonth.of(year, month);
+            startDate = yearMonth.atDay(1).atStartOfDay();
+            endDate = yearMonth.atEndOfMonth().atTime(23, 59, 59);
         }
 
-        // Sort doctor statistics by total appointments (descending)
-        doctorStatistics.sort((d1, d2) -> Integer.compare(d2.getTotalAppointments(), d1.getTotalAppointments()));
+        List<Appointment> appointments = appointmentRepository.findByAppointmentDateBetween(startDate, endDate);
+        return calculateStatistics(year, isAnnual ? 0 : month, appointments);
+    }
+
+    private MonthlyReportDTO calculateStatistics(int year, int month, List<Appointment> appointments) {
+        int totalAppointments = appointments.size();
+        Map<String, Long> statusCounts = appointments.stream()
+                .filter(app -> app.getStatus() != null)
+                .collect(Collectors.groupingBy(Appointment::getStatus, Collectors.counting()));
+
+        Map<Doctor, List<Appointment>> appointmentsByDoctor = appointments.stream()
+                .filter(app -> app.getDoctor() != null)
+                .collect(Collectors.groupingBy(Appointment::getDoctor));
+
+        List<DoctorStatisticsDTO> doctorStatistics = appointmentsByDoctor.entrySet().stream()
+                .map(entry -> {
+                    Doctor doctor = entry.getKey();
+                    List<Appointment> docsApps = entry.getValue();
+
+                    long uniquePatients = docsApps.stream()
+                            .map(app -> app.getPatient().getId())
+                            .distinct()
+                            .count();
+
+                    return new DoctorStatisticsDTO(
+                            doctor.getId(),
+                            doctor.getUser().getFullName(),
+                            doctor.getSpecialty() != null ? doctor.getSpecialty().getName() : "N/A",
+                            docsApps.size(),
+                            (int) uniquePatients,
+                            countStatus(docsApps, "CONFIRMED"),
+                            countStatus(docsApps, "CANCELLED"),
+                            countStatus(docsApps, "COMPLETED")
+                    );
+                })
+                .sorted((d1, d2) -> Integer.compare(d2.getTotalAppointments(), d1.getTotalAppointments()))
+                .collect(Collectors.toList());
 
         return new MonthlyReportDTO(
-                month,
+                month, // 0 indicates Annual
                 year,
                 totalAppointments,
-                confirmedAppointments,
-                cancelledAppointments,
-                completedAppointments,
-                pendingAppointments,
-                rejectedAppointments,
+                statusCounts.getOrDefault("CONFIRMED", 0L).intValue(),
+                statusCounts.getOrDefault("CANCELLED", 0L).intValue(),
+                statusCounts.getOrDefault("COMPLETED", 0L).intValue(),
+                statusCounts.getOrDefault("PENDING", 0L).intValue(),
+                statusCounts.getOrDefault("REJECTED", 0L).intValue(),
                 doctorStatistics
         );
+    }
+
+    private int countStatus(List<Appointment> list, String status) {
+        return (int) list.stream().filter(a -> status.equals(a.getStatus())).count();
     }
 }
