@@ -60,7 +60,26 @@ function OnlineAppoinment() {
         }
     }, [selectedDoctor]);
 
+    useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const paymentStatus = urlParams.get('payment');
     
+    if (paymentStatus === 'success') {
+        setSuccess('Payment successful! Your appointment has been confirmed.');
+        setActiveView('myappointments');
+        fetchMyAppointments(); 
+        
+        window.history.replaceState({}, '', '/appointments');
+        
+        setTimeout(() => setSuccess(null), 5000);
+    } else if (paymentStatus === 'cancelled') {
+        setError('Payment was cancelled. Please try again or contact support.');
+        
+        window.history.replaceState({}, '', '/appointments');
+        
+        setTimeout(() => setError(null), 5000);
+    }
+}, []);
 
     const fetchInitialData = async () => {
         try {
@@ -159,13 +178,12 @@ function OnlineAppoinment() {
                         doctor: { id: selectedDoctor.id },
                         appointmentDate: appointmentDateTime,
                         notes: notes || '',
-                        status: 'CONFIRMED', 
+                        status: 'PENDING', 
                         cost: 150
                     })
                 });
 
                 if (response.ok) {
-                    await response.json();
                     window.location.href = 'https://buy.stripe.com/test_28EcN432ycud6Km8YjcjS00';
                 } else {
                     setError('Eroare la crearea programării.');
@@ -261,35 +279,26 @@ function OnlineAppoinment() {
     };
 
     const getDayOfWeekName = (dayNumber) => {
-    const days = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
-    return days[dayNumber];
-};
+        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        return days[dayNumber];
+    };
 
     const getAvailableTimesForDate = () => {
-    if (!selectedDate || !availabilities.length) {
-        console.log('No date selected or no availabilities');
-        return [];
-    }
+        if (!selectedDate || !availabilities.length) {
+            console.log('No date selected or no availabilities');
+            return [];
+        }
 
-    const selectedDayOfWeek = getDayOfWeek(selectedDate);
-    const selectedDayName = getDayOfWeekName(selectedDayOfWeek).toUpperCase(); 
-    
-    console.log('Selected day number:', selectedDayOfWeek);
-    console.log('Selected day name:', selectedDayName);
-    console.log('All availabilities:', availabilities);
+        const selectedDayOfWeek = getDayOfWeek(selectedDate);
 
-    const dayAvailabilities = availabilities.filter(availability => {
-        const availabilityDay = availability.dayOfWeek; 
-        const isActive = availability.isActive;
-        
-        console.log(`Comparing: "${availabilityDay}" === "${selectedDayName}" ? ${availabilityDay === selectedDayName}, Active: ${isActive}`);
-        
-        return availabilityDay === selectedDayName && isActive;
-    });
+        const dayAvailabilities = availabilities.filter(availability => {
+            const availabilityDay = parseInt(availability.dayOfWeek);
+            const isActive = availability.isActive;
+            return availabilityDay === selectedDayOfWeek && isActive;
+        });
 
-    console.log('Found availabilities:', dayAvailabilities);
-    return dayAvailabilities;
-};
+        return dayAvailabilities;
+    };
 
     if (!user) {
         return null;
