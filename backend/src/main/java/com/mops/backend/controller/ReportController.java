@@ -18,9 +18,10 @@ public class ReportController {
     public ResponseEntity<MonthlyReportDTO> getReport(
             @RequestParam int year,
             @RequestParam(required = false, defaultValue = "1") int month,
-            @RequestParam boolean isAnnual) {
-    
-        MonthlyReportDTO report = reportService.generateReport(year, month, isAnnual);
+            @RequestParam boolean isAnnual,
+            @RequestParam(required = false, defaultValue = "0") int months) {
+
+        MonthlyReportDTO report = reportService.generateReport(year, month, isAnnual, months);
         return ResponseEntity.ok(report);
     }
 }

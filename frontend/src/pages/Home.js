@@ -1,17 +1,26 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useEffect } from 'react';
 import './Home.css';
 
 function Home() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user?.role === 'DOCTOR') {
+      navigate('/doctor/dashboard', { replace: true });
+    } else if (user?.role === 'ADMIN') {
+      navigate('/admin/dashboard', { replace: true });
+    }
+  }, [user, navigate]);
 
   return (
     <div className="home-container">
       <div className="home-hero">
         <h1 className="home-title">MedEase</h1>
         <p className="home-subtitle">
-          Sistem modern de gestionare a programărilor medicale online
+          Modern online medical appointment management system
         </p>
 
       </div>
@@ -24,8 +33,8 @@ function Home() {
           tabIndex={0}
           onKeyPress={(e) => e.key === 'Enter' && navigate('/appointments')}
         >
-          <h3>Programări Online</h3>
-          <p>Faceți programări rapid și ușor din confortul casei</p>
+          <h3>Online Appointments</h3>
+          <p>Book appointments quickly and easily from the comfort of your home</p>
           
         </div>
         
@@ -36,14 +45,14 @@ function Home() {
           tabIndex={0}
           onKeyPress={(e) => e.key === 'Enter' && navigate('/doctors')}
         >
-          <h3>Doctori Calificați</h3>
-          <p>Alegeți din lista noastră de medici experimentați</p>
+          <h3>Qualified Doctors</h3>
+          <p>Choose from our list of experienced physicians</p>
           
         </div>
         
         <div className="home-feature">
-          <h3>Gestionare Eficientă</h3>
-          <p>Vizualizați și gestionați toate programările într-un singur loc</p>
+          <h3>Efficient Management</h3>
+          <p>View and manage all your appointments in one place</p>
         </div>
       </div>
     </div>

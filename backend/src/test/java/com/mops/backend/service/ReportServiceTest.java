@@ -72,7 +72,7 @@ class ReportServiceTest {
                 .thenReturn(Arrays.asList(app1, app2, app3));
 
         // isAnnual = false for Monthly
-        MonthlyReportDTO report = reportService.generateReport(2024, 1, false);
+        MonthlyReportDTO report = reportService.generateReport(2024, 1, false, 0);
 
         assertNotNull(report);
         assertEquals(2024, report.getYear());
@@ -93,7 +93,7 @@ class ReportServiceTest {
                 .thenReturn(Arrays.asList(appJan, appDec));
 
         // isAnnual = true
-        MonthlyReportDTO report = reportService.generateReport(2024, 0, true);
+        MonthlyReportDTO report = reportService.generateReport(2024, 0, true, 0);
 
         assertNotNull(report);
         assertEquals(2024, report.getYear());
@@ -114,7 +114,7 @@ class ReportServiceTest {
         when(appointmentRepository.findByAppointmentDateBetween(any(), any()))
                 .thenReturn(Collections.singletonList(app1));
 
-        MonthlyReportDTO report = reportService.generateReport(2024, 1, false);
+        MonthlyReportDTO report = reportService.generateReport(2024, 1, false, 0);
 
         assertEquals("N/A", report.getDoctorStatistics().get(0).getSpecialty());
     }
@@ -131,7 +131,7 @@ class ReportServiceTest {
         when(appointmentRepository.findByAppointmentDateBetween(any(), any()))
                 .thenReturn(Arrays.asList(app1, app2, app3));
 
-        MonthlyReportDTO report = reportService.generateReport(2024, 1, false);
+        MonthlyReportDTO report = reportService.generateReport(2024, 1, false, 0);
 
         assertEquals(2L, report.getDoctorStatistics().get(0).getDoctorId());
         assertEquals(3, report.getTotalAppointments());
