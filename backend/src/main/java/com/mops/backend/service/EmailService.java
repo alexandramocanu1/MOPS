@@ -125,4 +125,52 @@ public class EmailService {
 
         return templateEngine.process("appointment-cancellation", context);
     }
+
+    public void sendPaymentConfirmation(Appointment appointment) {
+        if (appointment.getPatient() == null || appointment.getPatient().getEmail() == null || appointment.getPatient().getEmail().isEmpty()) {
+            System.err.println("Cannot send payment confirmation email: Patient or patient email is null or empty");
+            return;
+        }
+
+        try {
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(appointment.getPatient().getEmail());
+            helper.setSubject("Payment Successful - Appointment Confirmed - " + clinicName);
+
+            String htmlContent = buildPaymentConfirmationEmail(appointment);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(mimeMessage);
+
+            System.out.println("Payment confirmation email sent to: " + appointment.getPatient().getEmail());
+        } catch (MessagingException e) {
+            System.err.println("Failed to send payment confirmation email: " + e.getMessage());
+            e.printStackTrace();
+        } catch (Exception e) {
+            System.err.println("Unexpected error sending payment confirmation email: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private String buildPaymentConfirmationEmail(Appointment appointment) {
+        Context context = new Context();
+
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("EEEE, MMMM dd, yyyy 'at' hh:mm a");
+        DateTimeFormatter timestampFormatter = DateTimeFormatter.ofPattern("MMMM dd, yyyy 'at' hh:mm:ss a");
+
+        context.setVariable("clinicName", clinicName);
+        context.setVariable("patientName", appointment.getPatient().getFirstName() + " " + appointment.getPatient().getLastName());
+        context.setVariable("appointmentDate", appointment.getAppointmentDate().format(dateFormatter));
+        context.setVariable("doctorName", "Dr. " + appointment.getDoctor().getUser().getFirstName() + " " + appointment.getDoctor().getUser().getLastName());
+        context.setVariable("doctorSpecialty", appointment.getDoctor().getSpecialty().getName());
+        context.setVariable("appointmentId", appointment.getId());
+        context.setVariable("cost", appointment.getCost() != null ? appointment.getCost() : 150);
+        context.setVariable("notes", appointment.getNotes() != null ? appointment.getNotes() : "No additional notes");
+        context.setVariable("confirmedAt", appointment.getUpdatedAt() != null ? appointment.getUpdatedAt().format(timestampFormatter) : java.time.LocalDateTime.now().format(timestampFormatter));
+
+        return templateEngine.process("payment-confirmation", context);
+    }
 }

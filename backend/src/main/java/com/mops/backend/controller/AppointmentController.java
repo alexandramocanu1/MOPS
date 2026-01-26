@@ -116,6 +116,16 @@ public class AppointmentController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    @PutMapping("/{id}/confirm-payment")
+    public ResponseEntity<Appointment> confirmPaymentAppointment(@PathVariable Long id) {
+        try {
+            Appointment appointment = appointmentService.confirmPaymentAppointment(id);
+            return ResponseEntity.ok(appointment);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
     
     @PutMapping("/{id}/reject")
     public ResponseEntity<Appointment> rejectAppointment(@PathVariable Long id) {

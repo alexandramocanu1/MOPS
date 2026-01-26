@@ -83,6 +83,15 @@ public class AppointmentService {
     public Appointment confirmAppointment(Long id) {
         return updateAppointmentStatus(id, "CONFIRMED");
     }
+
+    public Appointment confirmPaymentAppointment(Long id) {
+        Appointment appointment = updateAppointmentStatus(id, "CONFIRMED");
+
+        // Send payment confirmation email to patient
+        emailService.sendPaymentConfirmation(appointment);
+
+        return appointment;
+    }
     
     public Appointment rejectAppointment(Long id) {
         return updateAppointmentStatus(id, "REJECTED");

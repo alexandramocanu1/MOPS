@@ -69,15 +69,13 @@ function OnlineAppoinment() {
     
     if (paymentStatus === 'success') {
         if (pendingAppointmentId) {
-            fetch(`${API_BASE_URL}/appointments/${pendingAppointmentId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: 'CONFIRMED' })
+            fetch(`${API_BASE_URL}/appointments/${pendingAppointmentId}/confirm-payment`, {
+                method: 'PUT'
             }).then(() => {
-                localStorage.removeItem('pendingAppointmentId'); 
-                setSuccess('Payment successful! Your appointment has been confirmed.');
+                localStorage.removeItem('pendingAppointmentId');
+                setSuccess('Payment successful! Your appointment has been confirmed. A confirmation email has been sent.');
                 setActiveView('myappointments');
-                fetchMyAppointments(); 
+                fetchMyAppointments();
             });
         } else {
             setSuccess('Payment successful! Your appointment has been confirmed.');
@@ -302,24 +300,17 @@ function OnlineAppoinment() {
 
     const getAvailableTimesForDate = () => {
     if (!selectedDate || !availabilities.length) {
-        console.log('No date selected or no availabilities');
         return [];
     }
 
     const selectedDayOfWeek = getDayOfWeek(selectedDate);
-    const selectedDayName = getDayOfWeekName(selectedDayOfWeek); 
-    
-    console.log('Selected day number:', selectedDayOfWeek);
-    console.log('Selected day name:', selectedDayName);
 
     const dayAvailabilities = availabilities.filter(availability => {
-        const availabilityDay = availability.dayOfWeek; 
+        const availabilityDay = parseInt(availability.dayOfWeek);
         const isActive = availability.isActive;
-        console.log(`Comparing: "${availabilityDay}" === "${selectedDayName}"`, availabilityDay === selectedDayName);
-        return availabilityDay === selectedDayName && isActive; 
-    }); 
+        return availabilityDay === selectedDayOfWeek && isActive;
+    });
 
-    console.log('Found availabilities:', dayAvailabilities);
     return dayAvailabilities;
 };
 
