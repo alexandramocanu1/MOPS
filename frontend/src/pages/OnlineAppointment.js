@@ -201,6 +201,7 @@ function OnlineAppoinment() {
                     localStorage.setItem('pendingAppointmentId', newAppointment.id);
                     window.location.href = 'https://buy.stripe.com/test_28EcN432ycud6Km8YjcjS00';
                 } else {
+                    console.log(response.body);
     setError('Eroare la crearea programării.');
 }
             }
