@@ -6,7 +6,7 @@ import './OnlineAppoinment.css';
 const API_BASE_URL = 'http://localhost:7000/api';
 
 function OnlineAppoinment() {
-    const { user } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const navigate = useNavigate();
 
     const [activeView, setActiveView] = useState('book'); 
@@ -31,12 +31,14 @@ function OnlineAppoinment() {
     const [success, setSuccess] = useState(null);
 
     useEffect(() => {
-        if (!user) {
-            navigate('/login');
-            return;
-        }
-        fetchInitialData();
-    }, [user, navigate]);
+    if (authLoading) return;
+    
+    if (!user) {
+        navigate('/login');
+        return;
+    }
+    fetchInitialData();
+}, [user, navigate, authLoading]); 
 
     useEffect(() => {
         if (selectedSpecialty) {
@@ -63,20 +65,32 @@ function OnlineAppoinment() {
     useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const paymentStatus = urlParams.get('payment');
+    const pendingAppointmentId = localStorage.getItem('pendingAppointmentId');
     
     if (paymentStatus === 'success') {
-        setSuccess('Payment successful! Your appointment has been confirmed.');
-        setActiveView('myappointments');
-        fetchMyAppointments(); 
+        if (pendingAppointmentId) {
+            fetch(`${API_BASE_URL}/appointments/${pendingAppointmentId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'CONFIRMED' })
+            }).then(() => {
+                localStorage.removeItem('pendingAppointmentId'); 
+                setSuccess('Payment successful! Your appointment has been confirmed.');
+                setActiveView('myappointments');
+                fetchMyAppointments(); 
+            });
+        } else {
+            setSuccess('Payment successful! Your appointment has been confirmed.');
+            setActiveView('myappointments');
+            fetchMyAppointments();
+        }
         
         window.history.replaceState({}, '', '/appointments');
-        
         setTimeout(() => setSuccess(null), 5000);
     } else if (paymentStatus === 'cancelled') {
+        localStorage.removeItem('pendingAppointmentId'); 
         setError('Payment was cancelled. Please try again or contact support.');
-        
         window.history.replaceState({}, '', '/appointments');
-        
         setTimeout(() => setError(null), 5000);
     }
 }, []);
@@ -178,16 +192,19 @@ function OnlineAppoinment() {
                         doctor: { id: selectedDoctor.id },
                         appointmentDate: appointmentDateTime,
                         notes: notes || '',
-                        status: 'PENDING', 
+                        status: 'CONFIRMED', 
                         cost: 150
                     })
                 });
 
                 if (response.ok) {
+                    const newAppointment = await response.json();
+                    
+                    localStorage.setItem('pendingAppointmentId', newAppointment.id);
                     window.location.href = 'https://buy.stripe.com/test_28EcN432ycud6Km8YjcjS00';
                 } else {
-                    setError('Eroare la crearea programării.');
-                }
+    setError('Eroare la crearea programării.');
+}
             }
         } catch (err) {
             setError('Eroare de conexiune la server.');
@@ -279,26 +296,32 @@ function OnlineAppoinment() {
     };
 
     const getDayOfWeekName = (dayNumber) => {
-        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const days = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
         return days[dayNumber];
     };
 
     const getAvailableTimesForDate = () => {
-        if (!selectedDate || !availabilities.length) {
-            console.log('No date selected or no availabilities');
-            return [];
-        }
+    if (!selectedDate || !availabilities.length) {
+        console.log('No date selected or no availabilities');
+        return [];
+    }
 
-        const selectedDayOfWeek = getDayOfWeek(selectedDate);
+    const selectedDayOfWeek = getDayOfWeek(selectedDate);
+    const selectedDayName = getDayOfWeekName(selectedDayOfWeek); 
+    
+    console.log('Selected day number:', selectedDayOfWeek);
+    console.log('Selected day name:', selectedDayName);
 
-        const dayAvailabilities = availabilities.filter(availability => {
-            const availabilityDay = parseInt(availability.dayOfWeek);
-            const isActive = availability.isActive;
-            return availabilityDay === selectedDayOfWeek && isActive;
-        });
+    const dayAvailabilities = availabilities.filter(availability => {
+        const availabilityDay = availability.dayOfWeek; 
+        const isActive = availability.isActive;
+        console.log(`Comparing: "${availabilityDay}" === "${selectedDayName}"`, availabilityDay === selectedDayName);
+        return availabilityDay === selectedDayName && isActive; 
+    }); 
 
-        return dayAvailabilities;
-    };
+    console.log('Found availabilities:', dayAvailabilities);
+    return dayAvailabilities;
+};
 
     if (!user) {
         return null;
