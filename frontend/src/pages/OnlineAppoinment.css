@@ -1,12 +1,12 @@
 .appointments-page {
     min-height: calc(100vh - 70px);
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #ede7f6;
     padding: 2rem;
 }
 
 .appointments-header {
     text-align: center;
-    color: white;
+    color: #4a318f;
     margin-bottom: 2rem;
 }
 
@@ -14,12 +14,11 @@
     font-size: 3rem;
     font-weight: 700;
     margin-bottom: 0.5rem;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .appointments-header p {
     font-size: 1.2rem;
-    opacity: 0.9;
+    opacity: 0.8;
 }
 
 .view-toggle {
@@ -31,26 +30,25 @@
 
 .toggle-btn {
     padding: 0.75rem 2rem;
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-    border: 2px solid transparent;
+    background: white;
+    color: #7c6bc9;
+    border: 2px solid #7c6bc9;
     border-radius: 8px;
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
 }
 
 .toggle-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: #f3eeff;
     transform: translateY(-2px);
 }
 
 .toggle-btn.active {
-    background: white;
-    color: #667eea;
-    border-color: white;
+    background: #7c6bc9;
+    color: white;
+    border-color: #7c6bc9;
 }
 
 .alert {
@@ -83,9 +81,9 @@
 }
 
 .alert-success {
-    background: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
+    background: #f3eeff;
+    color: #4a318f;
+    border: 1px solid #c4b5fd;
 }
 
 .alert-close {
@@ -119,7 +117,7 @@
     background: white;
     padding: 2.5rem;
     border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
 
 .booking-container h2,
@@ -159,8 +157,28 @@
 
 .form-control:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: #7c6bc9;
+    box-shadow: 0 0 0 3px rgba(124, 107, 201, 0.1);
+}
+
+.doctor-search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.doctor-search-box .search-icon {
+    position: absolute;
+    left: 0.875rem;
+    width: 1.2rem;
+    height: 1.2rem;
+    color: #7c6bc9;
+    pointer-events: none;
+    flex-shrink: 0;
+}
+
+.doctor-search-box .search-input {
+    padding-left: 2.75rem;
 }
 
 .doctors-grid {
@@ -187,17 +205,21 @@
     text-align: center;
 }
 
+.doctor-card,
+.doctor-card * {
+    cursor: pointer;
+}
+
 .doctor-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-    border-color: #667eea;
+    border-color: #7c6bc9;
 }
 
 .doctor-card.selected {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #7c6bc9;
     color: white;
-    border-color: #667eea;
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    border-color: #7c6bc9;
+    box-shadow: 0 8px 20px rgba(124, 107, 201, 0.3);
 }
 
 .doctor-icon {
@@ -234,7 +256,7 @@
 .doctor-rating {
     font-size: 0.95rem;
     font-weight: 600;
-    color: #667eea;
+    color: #7c6bc9;
 }
 
 .doctor-card.selected .doctor-rating {
@@ -260,17 +282,34 @@
     color: #495057;
 }
 
-.time-slot:hover {
+.time-slot:hover:not(:disabled) {
     background: #e9ecef;
-    border-color: #667eea;
+    border-color: #7c6bc9;
     transform: translateY(-2px);
 }
 
 .time-slot.selected {
-    background: #667eea;
+    background: #7c6bc9;
     color: white;
-    border-color: #667eea;
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    border-color: #7c6bc9;
+    box-shadow: 0 4px 12px rgba(124, 107, 201, 0.3);
+}
+
+.time-slot.booked {
+    background: #d6d6d6;
+    color: #888;
+    border-color: #c0c0c0;
+    cursor: not-allowed;
+    opacity: 0.75;
+}
+
+.time-slot.booked:hover {
+    transform: none;
+}
+
+.booked-label {
+    font-size: 0.8rem;
+    font-weight: 500;
 }
 
 .no-availability {
@@ -286,7 +325,7 @@
 .btn-submit {
     width: 100%;
     padding: 1rem 2rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #7c6bc9;
     color: white;
     border: none;
     border-radius: 8px;
@@ -298,8 +337,9 @@
 }
 
 .btn-submit:hover:not(:disabled) {
+    background: #6a58b5;
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 8px 20px rgba(124, 107, 201, 0.3);
 }
 
 .btn-submit:disabled {
@@ -320,7 +360,7 @@
 
 .btn-book-now {
     padding: 1rem 2rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #7c6bc9;
     color: white;
     border: none;
     border-radius: 8px;
@@ -331,8 +371,9 @@
 }
 
 .btn-book-now:hover {
+    background: #6a58b5;
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 8px 20px rgba(124, 107, 201, 0.3);
 }
 
 .appointments-list {
@@ -351,11 +392,11 @@
 .appointment-card:hover {
     transform: translateY(-3px);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-    border-color: #667eea;
+    border-color: #7c6bc9;
 }
 
 .appointment-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #7c6bc9;
     padding: 1rem 1.5rem;
     display: flex;
     justify-content: space-between;
@@ -444,6 +485,8 @@
     border-top: 2px solid #e9ecef;
     display: flex;
     justify-content: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
 .btn-cancel {
@@ -574,7 +617,7 @@
 }
 
 .rescheduling-banner {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #7c6bc9;
     color: white;
     padding: 20px;
     border-radius: 10px;
@@ -584,17 +627,6 @@
     align-items: center;
     gap: 20px;
     animation: slideDown 0.3s ease;
-}
-
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
 
 .banner-content {
@@ -621,7 +653,7 @@
 
 .btn-cancel-rescheduling {
     background: white;
-    color: #667eea;
+    color: #7c6bc9;
     border: none;
     padding: 10px 20px;
     border-radius: 8px;
@@ -640,12 +672,12 @@
     padding: 20px;
     border-radius: 10px;
     margin-bottom: 25px;
-    border: 2px solid #667eea;
+    border: 2px solid #7c6bc9;
 }
 
 .selected-doctor-info h3 {
     margin: 0 0 5px 0;
-    color: #667eea;
+    color: #7c6bc9;
     font-size: 20px;
 }
 
@@ -654,7 +686,6 @@
     color: #666;
     font-size: 16px;
 }
-
 
 .cancellation-notice {
     background: #fff3cd;
@@ -678,7 +709,7 @@
 }
 
 .btn-reschedule {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #7c6bc9;
     color: white;
     border: none;
     padding: 12px 24px;
@@ -693,19 +724,9 @@
 }
 
 .btn-reschedule:hover {
+    background: #6a58b5;
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-}
-
-/* Update appointment actions layout */
-.appointment-actions {
-    padding: 15px 20px;
-    background: #f8f9ff;
-    border-top: 1px solid #e0e7ff;
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-    flex-wrap: wrap;
+    box-shadow: 0 5px 15px rgba(124, 107, 201, 0.4);
 }
 
 /* Alerts */
@@ -726,9 +747,9 @@
 }
 
 .alert-success {
-    background: #efe;
-    color: #2a7;
-    border-left: 4px solid #2a7;
+    background: #f3eeff;
+    color: #4a318f;
+    border: 1px solid #c4b5fd;
 }
 
 .alert-close {

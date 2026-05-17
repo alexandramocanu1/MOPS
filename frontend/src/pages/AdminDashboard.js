@@ -8,7 +8,7 @@ import './AdminDashboard.css';
 const API_BASE_URL = 'http://localhost:7000/api';
 
 function AdminDashboard() {
-    const { user } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const navigate = useNavigate();
 
     const [stats, setStats] = useState({
@@ -34,12 +34,13 @@ function AdminDashboard() {
     const [selectedDoctorForAvailability, setSelectedDoctorForAvailability] = useState(null);
 
     useEffect(() => {
+        if (authLoading) return;
         if (user?.role !== 'ADMIN') {
             navigate('/');
             return;
         }
         fetchDashboardData();
-    }, [user, navigate]);
+    }, [user, authLoading, navigate]);
 
     const fetchDashboardData = async () => {
         try {

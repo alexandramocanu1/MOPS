@@ -7,11 +7,11 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import PatientDashboard from './pages/PatientDashboard';
-import DoctorsPage from './pages/DoctorsPage';
 import OnlineAppoinment from './pages/OnlineAppointment';
 import DoctorDashboard from './pages/DoctorDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import Navbar from './components/Navbar';
+import Breadcrumb from './components/Breadcrumb';
 import ReportsPage from './pages/ReportsPage';
 import PaymentPage from './pages/PaymentPage';
 
@@ -20,13 +20,13 @@ function App() {
     <AuthProvider>
       <Router>
         <Navbar/>
+        <Breadcrumb/>
         <div className="App">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path = "/patient/dashboard" element={<PatientDashboard />} />
-            <Route path = "/doctors" element={<DoctorsPage />} />
             <Route path = "/appointments" element={<OnlineAppoinment />} />
             <Route path = "/doctor/dashboard" element={<DoctorDashboard />} />
             <Route path = "/admin/dashboard" element={<AdminDashboard />} />

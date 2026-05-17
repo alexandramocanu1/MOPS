@@ -1,12 +1,12 @@
 .admin-dashboard {
     min-height: calc(100vh - 70px);
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #ede7f6;
     padding: 2rem;
 }
 
 .dashboard-header {
     text-align: center;
-    color: white;
+    color: #4a318f;
     margin-bottom: 2rem;
 }
 
@@ -67,26 +67,25 @@
 
 .tab-button {
     padding: 0.75rem 1.5rem;
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-    border: 2px solid transparent;
+    background: white;
+    color: #7c6bc9;
+    border: 2px solid #7c6bc9;
     border-radius: 8px;
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
 }
 
 .tab-button:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: #f3eeff;
     transform: translateY(-2px);
 }
 
 .tab-button.active {
-    background: white;
-    color: #667eea;
-    border-color: white;
+    background: #7c6bc9;
+    color: white;
+    border-color: #7c6bc9;
 }
 
 .tab-content {
@@ -139,27 +138,27 @@
 }
 
 .stat-primary .stat-icon {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #7c6bc9;
 }
 
 .stat-success .stat-icon {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    background: #28a745;
 }
 
 .stat-warning .stat-icon {
-    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+    background: #ffc107;
 }
 
 .stat-info .stat-icon {
-    background: linear-gradient(135deg, #17a2b8 0%, #0dcaf0 100%);
+    background: #17a2b8;
 }
 
 .stat-completed .stat-icon {
-    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    background: #6c757d;
 }
 
 .stat-secondary .stat-icon {
-    background: linear-gradient(135deg, #e83e8c 0%, #d63384 100%);
+    background: #e83e8c;
 }
 
 .stat-info {
@@ -207,7 +206,7 @@
     align-items: center;
     gap: 0.75rem;
     padding: 1.5rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #7c6bc9;
     color: white;
     border: none;
     border-radius: 10px;
@@ -263,7 +262,7 @@
 }
 
 .data-table thead {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #7c6bc9;
     color: white;
 }
 
@@ -561,7 +560,7 @@
 
 .btn-add-doctor {
     padding: 0.75rem 1.5rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #7c6bc9;
     color: white;
     border: none;
     border-radius: 8px;
@@ -710,7 +709,7 @@ textarea.form-input {
 .btn-submit {
     margin-top: 0;
     padding: 0.75rem 1.5rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #7c6bc9;
     color: white;
     border: none;
     border-radius: 8px;

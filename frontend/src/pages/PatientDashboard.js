@@ -7,7 +7,7 @@ import './PatientDashboard.css';
 const API_BASE_URL = 'http://localhost:7000/api';
 
 function PatientDashboard() {
-    const { user } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const navigate = useNavigate();
 
     const [appointments, setAppointments] = useState([]);
@@ -22,12 +22,13 @@ function PatientDashboard() {
     const [showReportViewer, setShowReportViewer] = useState(false);
 
     useEffect(() => {
-        if (!user || user.role !== 'PATIENT') {
+        if (authLoading) return;
+        if (!user || (user.role !== 'PATIENT' && user.role !== 'USER')) {
             navigate('/');
             return;
         }
         fetchPatientData();
-    }, [user, navigate]);
+    }, [user, authLoading, navigate]);
 
     useEffect(() => {
         filterAppointments();

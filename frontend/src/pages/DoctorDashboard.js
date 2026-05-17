@@ -8,7 +8,7 @@ import './DoctorDashboard.css';
 const API_BASE_URL = 'http://localhost:7000/api';
 
 function DoctorDashboard() {
-    const { user } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const navigate = useNavigate();
 
     const [doctorInfo, setDoctorInfo] = useState(null);
@@ -29,12 +29,13 @@ function DoctorDashboard() {
     const [isEditMode, setIsEditMode] = useState(false);
 
     useEffect(() => {
+        if (authLoading) return;
         if (!user || user.role !== 'DOCTOR') {
             navigate('/');
             return;
         }
         fetchDoctorData();
-    }, [user, navigate]);
+    }, [user, authLoading, navigate]);
 
     useEffect(() => {
         filterAppointments();

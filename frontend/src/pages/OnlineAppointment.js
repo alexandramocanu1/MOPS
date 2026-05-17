@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './OnlineAppoinment.css';
 
@@ -8,8 +8,9 @@ const API_BASE_URL = 'http://localhost:7000/api';
 function OnlineAppoinment() {
     const { user, loading: authLoading } = useAuth();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
 
-    const [activeView, setActiveView] = useState('book'); 
+    const [activeView, setActiveView] = useState('book');
     const [specialties, setSpecialties] = useState([]);
     const [doctors, setDoctors] = useState([]);
     const [filteredDoctors, setFilteredDoctors] = useState([]);
@@ -17,6 +18,7 @@ function OnlineAppoinment() {
     const [availabilities, setAvailabilities] = useState([]);
 
     const [selectedSpecialty, setSelectedSpecialty] = useState('');
+    const [doctorSearch, setDoctorSearch] = useState('');
     const [selectedDoctor, setSelectedDoctor] = useState(null);
     const [selectedDate, setSelectedDate] = useState('');
     const [selectedTime, setSelectedTime] = useState('');
@@ -25,6 +27,8 @@ function OnlineAppoinment() {
     // Stare pentru reprogramare
     const [isRescheduling, setIsRescheduling] = useState(false);
     const [reschedulingAppointment, setReschedulingAppointment] = useState(null);
+
+    const [doctorAppointments, setDoctorAppointments] = useState([]);
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -41,24 +45,33 @@ function OnlineAppoinment() {
 }, [user, navigate, authLoading]); 
 
     useEffect(() => {
+        let filtered = doctors.filter(d => d.isActive);
         if (selectedSpecialty) {
-            const filtered = doctors.filter(
-                d => d.specialty?.id === parseInt(selectedSpecialty) && d.isActive
-            );
-            setFilteredDoctors(filtered);
-            if (!isRescheduling) {
-                setSelectedDoctor(null);
-            }
-        } else {
-            setFilteredDoctors(doctors.filter(d => d.isActive));
+            filtered = filtered.filter(d => d.specialty?.id === parseInt(selectedSpecialty));
         }
-    }, [selectedSpecialty, doctors]);
+        if (doctorSearch.trim()) {
+            const q = doctorSearch.trim().toLowerCase();
+            filtered = filtered.filter(d => {
+                const name = d.user?.fullName ||
+                    (d.user?.firstName && d.user?.lastName
+                        ? `${d.user.firstName} ${d.user.lastName}`
+                        : '');
+                return name.toLowerCase().includes(q);
+            });
+        }
+        setFilteredDoctors(filtered);
+        if (!isRescheduling) {
+            setSelectedDoctor(null);
+        }
+    }, [selectedSpecialty, doctorSearch, doctors]);
 
     useEffect(() => {
         if (selectedDoctor) {
             fetchDoctorAvailability(selectedDoctor.id);
+            fetchDoctorAppointments(selectedDoctor.id);
         } else {
             setAvailabilities([]);
+            setDoctorAppointments([]);
         }
     }, [selectedDoctor]);
 
@@ -83,15 +96,27 @@ function OnlineAppoinment() {
             fetchMyAppointments();
         }
         
-        window.history.replaceState({}, '', '/appointments');
+        navigate('/appointments?view=myappointments', { replace: true, state: { fromBooking: true } });
         setTimeout(() => setSuccess(null), 5000);
     } else if (paymentStatus === 'cancelled') {
-        localStorage.removeItem('pendingAppointmentId'); 
+        localStorage.removeItem('pendingAppointmentId');
         setError('Payment was cancelled. Please try again or contact support.');
-        window.history.replaceState({}, '', '/appointments');
+        navigate('/appointments?view=book', { replace: true });
         setTimeout(() => setError(null), 5000);
     }
+// eslint-disable-next-line react-hooks/exhaustive-deps
 }, []);
+
+    useEffect(() => {
+        const view = searchParams.get('view');
+        if (view === 'myappointments') {
+            setActiveView('myappointments');
+            setIsRescheduling(false);
+            setReschedulingAppointment(null);
+        } else {
+            setActiveView('book');
+        }
+    }, [searchParams]);
 
     const fetchInitialData = async () => {
         try {
@@ -108,7 +133,7 @@ function OnlineAppoinment() {
             setDoctors(doctorsData);
             setFilteredDoctors(doctorsData);
 
-            if (user.role === 'PATIENT') {
+            if (user.role === 'PATIENT' || user.role === 'USER') {
                 await fetchMyAppointments();
             }
 
@@ -128,6 +153,31 @@ function OnlineAppoinment() {
         } catch (err) {
             console.error('Error fetching appointments:', err);
         }
+    };
+
+    const fetchDoctorAppointments = async (doctorId) => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/appointments/doctor/${doctorId}`);
+            if (response.ok) {
+                const data = await response.json();
+                setDoctorAppointments(data);
+            }
+        } catch (err) {
+            console.error('Error fetching doctor appointments:', err);
+        }
+    };
+
+    const isSlotBooked = (startTime) => {
+        if (!selectedDate || !doctorAppointments.length) return false;
+        return doctorAppointments.some(apt => {
+            if (apt.status === 'CANCELLED' || apt.status === 'REJECTED' || apt.status === 'COMPLETED') return false;
+            const aptDate = new Date(apt.appointmentDate);
+            const aptDateStr = aptDate.toISOString().split('T')[0];
+            if (aptDateStr !== selectedDate) return false;
+            const aptTime = aptDate.toTimeString().slice(0, 5);
+            const slotTime = startTime.slice(0, 5);
+            return aptTime === slotTime;
+        });
     };
 
     const fetchDoctorAvailability = async (doctorId) => {
@@ -232,6 +282,7 @@ function OnlineAppoinment() {
 
     const resetForm = () => {
         setSelectedSpecialty('');
+        setDoctorSearch('');
         setSelectedDoctor(null);
         setSelectedDate('');
         setSelectedTime('');
@@ -326,32 +377,6 @@ function OnlineAppoinment() {
                 <p>Book and manage your medical appointments</p>
             </div>
 
-            {user.role === 'PATIENT' && (
-                <div className="view-toggle">
-                    <button
-                        className={`toggle-btn ${activeView === 'book' ? 'active' : ''}`}
-                        onClick={() => {
-                            setActiveView('book');
-                            if (!isRescheduling) {
-                                resetForm();
-                            }
-                        }}
-                    >
-                        {isRescheduling ? 'Reschedule Appointment' : 'Book Appointment'}
-                    </button>
-                    <button
-                        className={`toggle-btn ${activeView === 'myappointments' ? 'active' : ''}`}
-                        onClick={() => {
-                            setActiveView('myappointments');
-                            if (isRescheduling) {
-                                handleCancelRescheduling();
-                            }
-                        }}
-                    >
-                        My Appointments
-                    </button>
-                </div>
-            )}
 
             {error && (
                 <div className="alert alert-error">
@@ -390,6 +415,24 @@ function OnlineAppoinment() {
                             {!isRescheduling && (
                                 <>
                                     <div className="form-group">
+                                        <label htmlFor="doctorSearch">Search Doctor</label>
+                                        <div className="doctor-search-box">
+                                            <svg className="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                                <circle cx="11" cy="11" r="7" />
+                                                <line x1="16.5" y1="16.5" x2="22" y2="22" />
+                                            </svg>
+                                            <input
+                                                id="doctorSearch"
+                                                type="text"
+                                                value={doctorSearch}
+                                                onChange={(e) => setDoctorSearch(e.target.value)}
+                                                className="form-control search-input"
+                                                placeholder="Search by doctor name..."
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="form-group">
                                         <label htmlFor="specialty">Select Specialty</label>
                                         <select
                                             id="specialty"
@@ -412,11 +455,14 @@ function OnlineAppoinment() {
                                             {filteredDoctors.length === 0 ? (
                                                 <p className="no-doctors">No doctors available for this specialty</p>
                                             ) : (
-                                                filteredDoctors.map(doctor => (
+                                                (selectedDoctor
+                                                    ? filteredDoctors.filter(d => d.id === selectedDoctor.id)
+                                                    : filteredDoctors
+                                                ).map(doctor => (
                                                     <div
                                                         key={doctor.id}
                                                         className={`doctor-card ${selectedDoctor?.id === doctor.id ? 'selected' : ''}`}
-                                                        onClick={() => setSelectedDoctor(doctor)}
+                                                        onClick={() => setSelectedDoctor(selectedDoctor?.id === doctor.id ? null : doctor)}
                                                     >
                                                         <h3>
                                                             {doctor.user?.fullName ||
@@ -464,6 +510,7 @@ function OnlineAppoinment() {
                                                         setSelectedDate(e.target.value);
                                                         setSelectedTime('');
                                                     }}
+                                                    onClick={(e) => e.target.showPicker?.()}
                                                     min={getMinDate()}
                                                     className="form-control"
                                                     required
@@ -475,16 +522,21 @@ function OnlineAppoinment() {
                                                     <label htmlFor="time">Select Time *</label>
                                                     {getAvailableTimesForDate().length > 0 ? (
                                                         <div className="time-slots">
-                                                            {getAvailableTimesForDate().map((availability, index) => (
+                                                            {getAvailableTimesForDate().map((availability, index) => {
+                                                                const booked = isSlotBooked(availability.startTime);
+                                                                return (
                                                                 <button
                                                                     key={index}
                                                                     type="button"
-                                                                    className={`time-slot ${selectedTime === availability.startTime ? 'selected' : ''}`}
-                                                                    onClick={() => setSelectedTime(availability.startTime)}
+                                                                    className={`time-slot ${selectedTime === availability.startTime ? 'selected' : ''} ${booked ? 'booked' : ''}`}
+                                                                    onClick={() => !booked && setSelectedTime(availability.startTime)}
+                                                                    disabled={booked}
                                                                 >
                                                                     {availability.startTime} - {availability.endTime}
+                                                                    {booked && <span className="booked-label"> (Booked)</span>}
                                                                 </button>
-                                                            ))}
+                                                                );
+                                                            })}
                                                         </div>
                                                     ) : (
                                                         <div className="no-availability-info">
@@ -530,7 +582,7 @@ function OnlineAppoinment() {
                 </div>
             )}
 
-            {activeView === 'myappointments' && user.role === 'PATIENT' && (
+            {activeView === 'myappointments' && (user.role === 'PATIENT' || user.role === 'USER') && (
                 <div className="my-appointments-section">
                     <div className="appointments-container">
                         <h2>My Appointments</h2>

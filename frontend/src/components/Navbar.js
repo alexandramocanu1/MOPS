@@ -51,20 +51,20 @@ function Navbar() {
           Dashboard
         </Link>
 
-        <Link 
-          to="/appointments" 
-          className={`navbar-link ${location.pathname === '/appointments' ? 'active' : ''}`}
+        <Link
+          to="/appointments?view=book"
+          className={`navbar-link ${location.pathname === '/appointments' && location.search !== '?view=myappointments' ? 'active' : ''}`}
         >
-          Appointments
-        </Link>
-        
-        <Link 
-          to="/doctors" 
-          className={`navbar-link ${location.pathname === '/doctors' ? 'active' : ''}`}
-        >
-          Doctors
+          Book Appointment
         </Link>
 
+        <Link
+          to="/appointments?view=myappointments"
+          className={`navbar-link ${location.pathname === '/appointments' && location.search === '?view=myappointments' ? 'active' : ''}`}
+        >
+          My Appointments
+        </Link>
+        
       </div>
 
       <div className="navbar-auth">
@@ -143,6 +143,7 @@ function Navbar() {
 
     switch (user?.role) {
       case 'PATIENT':
+      case 'USER':
         return renderPatientMenu();
       case 'DOCTOR':
         return renderDoctorMenu();

@@ -1,12 +1,12 @@
 .home-container {
-  min-height: calc(100vh - 70px); 
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: calc(100vh - 70px);
+  background: #ede7f6;
 }
 
 .home-hero {
   text-align: center;
   padding: 4rem 2rem;
-  color: white;
+  color: #4a318f;
 }
 
 .home-title {
@@ -26,10 +26,11 @@
   font-size: 1.2rem;
   margin-top: 1.5rem;
   padding: 1rem 2rem;
-  background: rgba(255, 255, 255, 0.2);
+  background: white;
+  color: #4a318f;
   border-radius: 8px;
   display: inline-block;
-  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(74, 49, 143, 0.15);
 }
 
 .home-features {
