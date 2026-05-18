@@ -3,29 +3,13 @@ import './MedicalReportViewer.css';
 function MedicalReportViewer({ report, onClose }) {
     if (!report) return null;
 
-    const formatDate = (dateString) => {
-        if (!dateString) return 'N/A';
-        const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
-    };
+    const formatDate = (d) => d
+        ? new Date(d).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+        : 'N/A';
 
-    const formatDateTime = (dateTimeString) => {
-        if (!dateTimeString) return 'N/A';
-        const date = new Date(dateTimeString);
-        return date.toLocaleString('en-US', {
-            weekday: 'short',
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    };
+    const formatDateTime = (d) => d
+        ? new Date(d).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+        : 'N/A';
 
     return (
         <div className="modal-overlay">
@@ -36,64 +20,81 @@ function MedicalReportViewer({ report, onClose }) {
                 </div>
 
                 <div className="report-content">
+
+                    {/* Patient info card */}
                     <div className="report-header-info">
-                        <div className="info-row">
-                            <div className="info-item">
-                                <label>Patient:</label>
-                                <span>{report.appointment?.patient?.firstName} {report.appointment?.patient?.lastName}</span>
-                            </div>
-                            <div className="info-item">
-                                <label>Doctor:</label>
-                                <span>Dr. {report.appointment?.doctor?.user?.firstName} {report.appointment?.doctor?.user?.lastName}</span>
-                            </div>
+                        <div className="info-item">
+                            <label>Patient</label>
+                            <span>{report.appointment?.patient?.firstName} {report.appointment?.patient?.lastName}</span>
                         </div>
-                        <div className="info-row">
-                            <div className="info-item">
-                                <label>Appointment Date:</label>
-                                <span>{formatDate(report.appointment?.appointmentDate)}</span>
-                            </div>
-                            <div className="info-item">
-                                <label>Report Created:</label>
-                                <span>{formatDateTime(report.createdDate)}</span>
-                            </div>
+                        <div className="info-item">
+                            <label>Doctor</label>
+                            <span>Dr. {report.appointment?.doctor?.user?.firstName} {report.appointment?.doctor?.user?.lastName}</span>
                         </div>
-                        <div className="info-row">
-                            <div className="info-item">
-                                <label>Specialty:</label>
-                                <span>{report.appointment?.doctor?.specialty?.name || 'N/A'}</span>
-                            </div>
+                        <div className="info-item">
+                            <label>Specialty</label>
+                            <span>{report.appointment?.doctor?.specialty?.name || 'N/A'}</span>
+                        </div>
+                        <div className="info-item">
+                            <label>Appointment Date</label>
+                            <span>{formatDate(report.appointment?.appointmentDate)}</span>
+                        </div>
+                        <div className="info-item">
+                            <label>Report Issued</label>
+                            <span>{formatDateTime(report.createdDate)}</span>
                         </div>
                     </div>
 
                     {report.symptoms && (
                         <div className="report-section">
-                            <h3>Complaints & Symptoms</h3>
+                            <span className="section-label">Complaints &amp; Symptoms</span>
                             <p>{report.symptoms}</p>
                         </div>
                     )}
 
                     {report.physicalExamination && (
                         <div className="report-section">
-                            <h3>Physical Examination</h3>
+                            <span className="section-label">Physical Examination</span>
                             <p>{report.physicalExamination}</p>
                         </div>
                     )}
 
                     {report.investigations && (
                         <div className="report-section">
-                            <h3>Investigations & Tests</h3>
+                            <span className="section-label">Investigations &amp; Tests</span>
                             <p>{report.investigations}</p>
                         </div>
                     )}
 
-                    <div className="report-section diagnosis-section">
-                        <h3>Diagnosis</h3>
+                    <div className="report-section">
+                        <span className="section-label">Diagnosis</span>
                         <p>{report.diagnosis}</p>
                     </div>
 
-                    {report.prescriptions && report.prescriptions.length > 0 && (
+                    {report.recommendations && (
                         <div className="report-section">
-                            <h3>Prescriptions</h3>
+                            <span className="section-label">Recommendations</span>
+                            <p>{report.recommendations}</p>
+                        </div>
+                    )}
+
+                    {report.followUpDate && (
+                        <div className="report-section">
+                            <span className="section-label">Follow-up</span>
+                            <p>Recommended on <strong>{formatDate(report.followUpDate)}</strong>. Please contact the clinic to schedule.</p>
+                        </div>
+                    )}
+
+                    {report.additionalNotes && (
+                        <div className="report-section">
+                            <span className="section-label">Notes</span>
+                            <p>{report.additionalNotes}</p>
+                        </div>
+                    )}
+
+                    {report.prescriptions && report.prescriptions.length > 0 && (
+                        <div className="report-section prescriptions-section">
+                            <span className="section-label">Prescriptions</span>
                             <div className="prescriptions-table">
                                 <table>
                                     <thead>
@@ -105,12 +106,12 @@ function MedicalReportViewer({ report, onClose }) {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {report.prescriptions.map((prescription, index) => (
-                                            <tr key={index}>
-                                                <td>{prescription.medication}</td>
-                                                <td>{prescription.dosage || '-'}</td>
-                                                <td>{prescription.frequency || '-'}</td>
-                                                <td>{prescription.duration || '-'}</td>
+                                        {report.prescriptions.map((p, i) => (
+                                            <tr key={i}>
+                                                <td>{p.medication}</td>
+                                                <td>{p.dosage || '—'}</td>
+                                                <td>{p.frequency || '—'}</td>
+                                                <td>{p.duration || '—'}</td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -119,31 +120,11 @@ function MedicalReportViewer({ report, onClose }) {
                         </div>
                     )}
 
-                    {report.recommendations && (
-                        <div className="report-section">
-                            <h3>Recommendations & Instructions</h3>
-                            <p>{report.recommendations}</p>
-                        </div>
-                    )}
-
-                    {report.followUpDate && (
-                        <div className="report-section follow-up-section">
-                            <h3>Follow-up Appointment</h3>
-                            <p>Recommended follow-up date: <strong>{formatDate(report.followUpDate)}</strong></p>
-                        </div>
-                    )}
-
-                    {report.additionalNotes && (
-                        <div className="report-section">
-                            <h3>Additional Notes</h3>
-                            <p>{report.additionalNotes}</p>
-                        </div>
-                    )}
                 </div>
 
                 <div className="report-footer">
                     <button onClick={onClose} className="btn-close-report">Close</button>
-                    <button onClick={() => window.print()} className="btn-print-report">Print Report</button>
+                    <button onClick={() => window.print()} className="btn-print-report">Print</button>
                 </div>
             </div>
         </div>

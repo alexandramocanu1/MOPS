@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { isFunctionalAllowed } from '../hooks/useCookiePreferences';
 import './OnlineAppoinment.css';
 
 const API_BASE_URL = 'http://localhost:7000/api';
@@ -19,6 +20,8 @@ function OnlineAppoinment() {
 
     const [selectedSpecialty, setSelectedSpecialty] = useState('');
     const [doctorSearch, setDoctorSearch] = useState('');
+    const [sortBy, setSortBy] = useState('');
+    const [showSortDropdown, setShowSortDropdown] = useState(false);
     const [selectedDoctor, setSelectedDoctor] = useState(null);
     const [selectedDate, setSelectedDate] = useState('');
     const [selectedTime, setSelectedTime] = useState('');
@@ -36,12 +39,12 @@ function OnlineAppoinment() {
 
     useEffect(() => {
     if (authLoading) return;
-    
     if (!user) {
         navigate('/login');
         return;
     }
     fetchInitialData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
 }, [user, navigate, authLoading]); 
 
     useEffect(() => {
@@ -52,18 +55,26 @@ function OnlineAppoinment() {
         if (doctorSearch.trim()) {
             const q = doctorSearch.trim().toLowerCase();
             filtered = filtered.filter(d => {
-                const name = d.user?.fullName ||
+                const name = (d.user?.fullName ||
                     (d.user?.firstName && d.user?.lastName
                         ? `${d.user.firstName} ${d.user.lastName}`
-                        : '');
-                return name.toLowerCase().includes(q);
+                        : '')).toLowerCase();
+                const specialty = (d.specialty?.name || '').toLowerCase();
+                const description = (d.description || '').toLowerCase();
+                const experience = d.experienceYears != null ? `${d.experienceYears} years` : '';
+                return name.includes(q) || specialty.includes(q) || description.includes(q) || experience.includes(q);
             });
+        }
+        if (sortBy === 'popularity') {
+            filtered = [...filtered].sort((a, b) => (b.popularity ?? 0) - (a.popularity ?? 0));
+        } else if (sortBy === 'experience') {
+            filtered = [...filtered].sort((a, b) => (b.experienceYears ?? 0) - (a.experienceYears ?? 0));
         }
         setFilteredDoctors(filtered);
         if (!isRescheduling) {
             setSelectedDoctor(null);
         }
-    }, [selectedSpecialty, doctorSearch, doctors]);
+    }, [selectedSpecialty, doctorSearch, sortBy, doctors, isRescheduling]);
 
     useEffect(() => {
         if (selectedDoctor) {
@@ -78,26 +89,27 @@ function OnlineAppoinment() {
     useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const paymentStatus = urlParams.get('payment');
-    const pendingAppointmentId = localStorage.getItem('pendingAppointmentId');
-    
-    if (paymentStatus === 'success') {
-        if (pendingAppointmentId) {
-            fetch(`${API_BASE_URL}/appointments/${pendingAppointmentId}/confirm-payment`, {
-                method: 'PUT'
-            }).then(() => {
-                localStorage.removeItem('pendingAppointmentId');
-                setSuccess('Payment successful! Your appointment has been confirmed. A confirmation email has been sent.');
-                setActiveView('myappointments');
-                fetchMyAppointments();
-            });
-        } else {
-            setSuccess('Payment successful! Your appointment has been confirmed.');
+    const activeViewParam = urlParams.get('view');
+    const pendingAppointmentId = isFunctionalAllowed() ? localStorage.getItem('pendingAppointmentId') : null;
+
+    const handlePaymentSuccess = (appointmentId) => {
+        localStorage.removeItem('pendingAppointmentId');
+        fetch(`${API_BASE_URL}/appointments/${appointmentId}/confirm-payment`, {
+            method: 'PUT'
+        }).then(() => {
+            setSuccess('Payment successful! Your appointment has been confirmed. A confirmation email has been sent.');
             setActiveView('myappointments');
             fetchMyAppointments();
-        }
-        
-        navigate('/appointments?view=myappointments', { replace: true, state: { fromBooking: true } });
+        });
         setTimeout(() => setSuccess(null), 5000);
+    };
+
+    if (paymentStatus === 'success' && pendingAppointmentId) {
+        handlePaymentSuccess(pendingAppointmentId);
+        navigate('/appointments?view=myappointments', { replace: true });
+    } else if (activeViewParam === 'myappointments' && pendingAppointmentId) {
+        // Stripe redirected back with ?view=myappointments after payment
+        handlePaymentSuccess(pendingAppointmentId);
     } else if (paymentStatus === 'cancelled') {
         localStorage.removeItem('pendingAppointmentId');
         setError('Payment was cancelled. Please try again or contact support.');
@@ -195,18 +207,15 @@ function OnlineAppoinment() {
         e.preventDefault();
 
         if (!selectedDoctor || !selectedDate || !selectedTime) {
-            setError('Te rugăm să completezi toate câmpurile obligatorii'); 
+            setError('Please fill in all required fields.');
             return;
         }
 
-        try {
-            setLoading(true);
-            setError(null);
-
-            const appointmentDateTime = `${selectedDate}T${selectedTime}`;
-
-            if (isRescheduling && reschedulingAppointment) {
-                // Reprogramăm programarea existentă
+        if (isRescheduling && reschedulingAppointment) {
+            try {
+                setLoading(true);
+                setError(null);
+                const appointmentDateTime = `${selectedDate}T${selectedTime}`;
                 const response = await fetch(`${API_BASE_URL}/appointments/${reschedulingAppointment.id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
@@ -219,7 +228,6 @@ function OnlineAppoinment() {
                         cost: reschedulingAppointment.cost || 150
                     })
                 });
-
                 if (response.ok) {
                     setSuccess('Appointment rescheduled successfully!');
                     setIsRescheduling(false);
@@ -229,34 +237,44 @@ function OnlineAppoinment() {
                     setActiveView('myappointments');
                     setTimeout(() => setSuccess(null), 3000);
                 } else {
-                    setError('Eroare la reprogramarea programării.');
+                    setError('Error rescheduling appointment.');
                 }
-            } else {
-                const response = await fetch(`${API_BASE_URL}/appointments`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        patient: { id: user.id },
-                        doctor: { id: selectedDoctor.id },
-                        appointmentDate: appointmentDateTime,
-                        notes: notes || '',
-                        status: 'CONFIRMED', 
-                        cost: 150
-                    })
-                });
+            } catch (err) {
+                setError('Server connection error.');
+            } finally {
+                setLoading(false);
+            }
+        } else {
+            setActiveView('checkout');
+        }
+    };
 
-                if (response.ok) {
-                    const newAppointment = await response.json();
-                    
-                    localStorage.setItem('pendingAppointmentId', newAppointment.id);
-                    window.location.href = 'https://buy.stripe.com/test_28EcN432ycud6Km8YjcjS00';
-                } else {
-                    console.log(response.body);
-    setError('Eroare la crearea programării.');
-}
+    const handleConfirmAndPay = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const appointmentDateTime = `${selectedDate}T${selectedTime}`;
+            const response = await fetch(`${API_BASE_URL}/appointments`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    patient: { id: user.id },
+                    doctor: { id: selectedDoctor.id },
+                    appointmentDate: appointmentDateTime,
+                    notes: notes || '',
+                    status: 'CONFIRMED',
+                    cost: selectedDoctor.appointmentCost || 150
+                })
+            });
+            if (response.ok) {
+                const newAppointment = await response.json();
+                if (isFunctionalAllowed()) localStorage.setItem('pendingAppointmentId', newAppointment.id);
+                window.location.href = 'https://buy.stripe.com/test_28EcN432ycud6Km8YjcjS00';
+            } else {
+                setError('Error creating appointment.');
             }
         } catch (err) {
-            setError('Eroare de conexiune la server.');
+            setError('Server connection error.');
         } finally {
             setLoading(false);
         }
@@ -372,10 +390,6 @@ function OnlineAppoinment() {
 
     return (
         <div className="appointments-page">
-            <div className="appointments-header">
-                <h1>Online Appointments</h1>
-                <p>Book and manage your medical appointments</p>
-            </div>
 
 
             {error && (
@@ -416,7 +430,7 @@ function OnlineAppoinment() {
                                 <>
                                     <div className="form-group">
                                         <label htmlFor="doctorSearch">Search Doctor</label>
-                                        <div className="doctor-search-box">
+                                        <div className="doctor-search-box" style={{ position: 'relative' }}>
                                             <svg className="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                                                 <circle cx="11" cy="11" r="7" />
                                                 <line x1="16.5" y1="16.5" x2="22" y2="22" />
@@ -427,8 +441,26 @@ function OnlineAppoinment() {
                                                 value={doctorSearch}
                                                 onChange={(e) => setDoctorSearch(e.target.value)}
                                                 className="form-control search-input"
-                                                placeholder="Search by doctor name..."
+                                                placeholder="Search by name, specialty, experience..."
+                                                onFocus={() => setShowSortDropdown(true)}
+                                                onBlur={() => setTimeout(() => setShowSortDropdown(false), 150)}
                                             />
+                                            {showSortDropdown && (
+                                                <div className="sort-dropdown">
+                                                    <div
+                                                        className={`sort-dropdown-item ${sortBy === 'popularity' ? 'active' : ''}`}
+                                                        onMouseDown={() => setSortBy(sortBy === 'popularity' ? '' : 'popularity')}
+                                                    >
+                                                        ★ Most Popular Doctors
+                                                    </div>
+                                                    <div
+                                                        className={`sort-dropdown-item ${sortBy === 'experience' ? 'active' : ''}`}
+                                                        onMouseDown={() => setSortBy(sortBy === 'experience' ? '' : 'experience')}
+                                                    >
+                                                        ⏱ Most Experienced Doctors
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
 
@@ -461,19 +493,31 @@ function OnlineAppoinment() {
                                                 ).map(doctor => (
                                                     <div
                                                         key={doctor.id}
-                                                        className={`doctor-card ${selectedDoctor?.id === doctor.id ? 'selected' : ''}`}
+                                                        className={`doctor-card-wrapper ${selectedDoctor?.id === doctor.id ? 'selected' : ''}`}
                                                         onClick={() => setSelectedDoctor(selectedDoctor?.id === doctor.id ? null : doctor)}
                                                     >
-                                                        <h3>
-                                                            {doctor.user?.fullName ||
-                                                             (doctor.user?.firstName && doctor.user?.lastName
-                                                                ? `${doctor.user.firstName} ${doctor.user.lastName}`
-                                                                : 'N/A')}
-                                                        </h3>
-                                                        <p className="doctor-specialty">{doctor.specialty?.name}</p>
-                                                        <p className="doctor-experience">{doctor.experienceYears} years experience</p>
-                                                        <div className="doctor-rating">
-                                                            Popularity: {doctor.popularity}
+                                                        <div className="doctor-card-inner">
+                                                            <div className="doctor-card">
+                                                                <h3>
+                                                                    {doctor.user?.fullName ||
+                                                                     (doctor.user?.firstName && doctor.user?.lastName
+                                                                        ? `${doctor.user.firstName} ${doctor.user.lastName}`
+                                                                        : 'N/A')}
+                                                                </h3>
+                                                                <p className="doctor-specialty">{doctor.specialty?.name}</p>
+                                                                <p className="doctor-experience">{doctor.experienceYears} years experience</p>
+                                                                <div className="doctor-rating">
+                                                                    Popularity: {doctor.popularity}
+                                                                </div>
+                                                            </div>
+                                                            <div className="doctor-card-back">
+                                                                <p className="back-description">{doctor.description || 'No description available.'}</p>
+                                                                {doctor.information && <p className="back-information">{doctor.information}</p>}
+                                                                <div className="back-cost">
+                                                                    {doctor.appointmentCost ? `${doctor.appointmentCost} RON / consultation` : 'Contact clinic for pricing'}
+                                                                </div>
+                                                                <span className="back-select-hint">Click to select</span>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 ))
@@ -578,6 +622,58 @@ function OnlineAppoinment() {
                                 </>
                             )}
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {activeView === 'checkout' && selectedDoctor && (
+                <div className="checkout-section">
+                    <div className="checkout-container">
+                        <h2>Appointment Summary</h2>
+
+                        <div className="checkout-card">
+                            <div className="checkout-doctor-row">
+                                <div className="checkout-doctor-info">
+                                    <h3>Dr. {selectedDoctor.user?.firstName} {selectedDoctor.user?.lastName}</h3>
+                                    <p>{selectedDoctor.specialty?.name}</p>
+                                    {selectedDoctor.experienceYears && <p>{selectedDoctor.experienceYears} years experience</p>}
+                                </div>
+                            </div>
+
+                            <div className="checkout-details">
+                                <div className="checkout-row">
+                                    <span className="checkout-label">Date</span>
+                                    <span className="checkout-value">
+                                        {new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                                    </span>
+                                </div>
+                                <div className="checkout-row">
+                                    <span className="checkout-label">Time</span>
+                                    <span className="checkout-value">{selectedTime}</span>
+                                </div>
+                                {notes && (
+                                    <div className="checkout-row">
+                                        <span className="checkout-label">Notes</span>
+                                        <span className="checkout-value">{notes}</span>
+                                    </div>
+                                )}
+                                <div className="checkout-row checkout-total-row">
+                                    <span className="checkout-label">Consultation Fee</span>
+                                    <span className="checkout-total-value">
+                                        {selectedDoctor.appointmentCost ? `${selectedDoctor.appointmentCost} RON` : '150 RON'}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="checkout-actions">
+                            <button onClick={() => setActiveView('book')} className="btn-back-checkout">
+                                ← Back
+                            </button>
+                            <button onClick={handleConfirmAndPay} disabled={loading} className="btn-confirm-pay">
+                                {loading ? 'Processing...' : 'Confirm & Pay →'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

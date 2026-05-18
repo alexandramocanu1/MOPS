@@ -28,7 +28,13 @@ public class Doctor {
     
     @Column
     private String description;
-    
+
+    @Column(length = 2000)
+    private String information;
+
+    @Column
+    private Integer appointmentCost;
+
     @Column
     private Integer experienceYears;
     
@@ -58,7 +64,13 @@ public class Doctor {
     
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
-    
+
+    public String getInformation() { return information; }
+    public void setInformation(String information) { this.information = information; }
+
+    public Integer getAppointmentCost() { return appointmentCost; }
+    public void setAppointmentCost(Integer appointmentCost) { this.appointmentCost = appointmentCost; }
+
     public Integer getExperienceYears() { return experienceYears; }
     public void setExperienceYears(Integer experienceYears) { this.experienceYears = experienceYears; }
     

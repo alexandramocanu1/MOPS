@@ -9,7 +9,7 @@ function Navbar() {
 
   const handleLogout = () => {
     logout();
-    navigate('/');
+    navigate('/login');
   };
 
   const renderGuestMenu = () => (
@@ -70,7 +70,7 @@ function Navbar() {
       <div className="navbar-auth">
         <div className="navbar-user">
           <span className="navbar-username">
-            {user?.name || user?.email || 'Pacient'}
+            {user?.name || user?.email || 'Patient'}
           </span>
           <button onClick={handleLogout} className="navbar-button logout">
             Logout
@@ -135,6 +135,22 @@ function Navbar() {
       </div>
     </>
   );
+
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/register' || location.pathname === '/forgot-password' || location.pathname === '/reset-password' || location.pathname === '/verify-email';
+
+  if (isAuthPage) {
+    return (
+      <nav className="navbar">
+        <div className="navbar-container navbar-container--centered">
+          <Link to="/login" className="navbar-logo">MedEase</Link>
+          <div className="navbar-auth">
+            <Link to="/login" className={`navbar-button login ${location.pathname === '/login' ? 'active' : ''}`}>Login</Link>
+            <Link to="/register" className={`navbar-button register ${location.pathname === '/register' ? 'active' : ''}`}>Register</Link>
+          </div>
+        </div>
+      </nav>
+    );
+  }
 
   const renderMenu = () => {
     if (!isAuthenticated()) {

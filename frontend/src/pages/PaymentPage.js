@@ -8,7 +8,7 @@ function PaymentPage() {
 
     return (
 
-        <p> Pagina de plata</p>
+        <p>Payment Page</p>
 
 
 

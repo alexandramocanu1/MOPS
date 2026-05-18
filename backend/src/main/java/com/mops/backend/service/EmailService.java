@@ -126,6 +126,62 @@ public class EmailService {
         return templateEngine.process("appointment-cancellation", context);
     }
 
+    public void sendVerificationEmail(String toEmail, String firstName, String verifyLink) {
+        try {
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(toEmail);
+            helper.setSubject("Verify your account - " + clinicName);
+
+            Context context = new Context();
+            context.setVariable("clinicName", clinicName);
+            context.setVariable("firstName", firstName);
+            context.setVariable("verifyLink", verifyLink);
+
+            String htmlContent = templateEngine.process("email-verification", context);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(mimeMessage);
+            System.out.println("Verification email sent to: " + toEmail);
+        } catch (MessagingException e) {
+            System.err.println("Failed to send verification email: " + e.getMessage());
+            e.printStackTrace();
+        } catch (Exception e) {
+            System.err.println("Unexpected error sending verification email: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public void sendPasswordReset(String toEmail, String firstName, String resetLink) {
+        try {
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(toEmail);
+            helper.setSubject("Password Reset - " + clinicName);
+
+            Context context = new Context();
+            context.setVariable("clinicName", clinicName);
+            context.setVariable("firstName", firstName);
+            context.setVariable("resetLink", resetLink);
+
+            String htmlContent = templateEngine.process("password-reset", context);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(mimeMessage);
+            System.out.println("Password reset email sent to: " + toEmail);
+        } catch (MessagingException e) {
+            System.err.println("Failed to send password reset email: " + e.getMessage());
+            e.printStackTrace();
+        } catch (Exception e) {
+            System.err.println("Unexpected error sending password reset email: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
     public void sendPaymentConfirmation(Appointment appointment) {
         if (appointment.getPatient() == null || appointment.getPatient().getEmail() == null || appointment.getPatient().getEmail().isEmpty()) {
             System.err.println("Cannot send payment confirmation email: Patient or patient email is null or empty");

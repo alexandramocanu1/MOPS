@@ -1,0 +1,246 @@
+.cookie-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 24px;
+}
+
+.cookie-modal {
+  background: #fff;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 620px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.cookie-modal-header {
+  padding: 24px 28px 16px;
+  border-bottom: 1px solid #eee;
+}
+
+.cookie-modal-header h2 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #111;
+}
+
+.cookie-modal-header p {
+  margin: 0;
+  font-size: 14px;
+  color: #555;
+  line-height: 1.6;
+}
+
+.cookie-modal-body {
+  padding: 20px 28px 24px;
+}
+
+.cookie-intro {
+  font-size: 14px;
+  color: #444;
+  line-height: 1.6;
+  margin: 0 0 20px 0;
+}
+
+/* Category rows */
+.cookie-category {
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.cookie-category-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  cursor: pointer;
+  user-select: none;
+  background-color: #fafafa;
+  transition: background-color 0.15s;
+}
+
+.cookie-category-header:hover {
+  background-color: #f0f0f0;
+}
+
+.cookie-category-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cookie-expand-icon {
+  font-size: 13px;
+  color: #888;
+  width: 12px;
+}
+
+.cookie-category-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #222;
+}
+
+.cookie-required-badge {
+  font-size: 11px;
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 500;
+}
+
+.cookie-category-body {
+  padding: 14px 16px 16px;
+  border-top: 1px solid #eee;
+  background-color: #fff;
+}
+
+.cookie-category-description {
+  font-size: 13px;
+  color: #555;
+  margin: 0 0 14px 0;
+  line-height: 1.6;
+}
+
+/* Table */
+.cookie-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.cookie-table th {
+  text-align: left;
+  padding: 7px 10px;
+  background-color: #f5f5f5;
+  color: #666;
+  font-weight: 600;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.cookie-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #f0f0f0;
+  color: #444;
+  vertical-align: top;
+}
+
+.cookie-table tr:last-child td {
+  border-bottom: none;
+}
+
+.cookie-table code {
+  background-color: #f0f4ff;
+  color: #3a57e8;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* Toggle switch */
+.cookie-toggle {
+  position: relative;
+  display: inline-block;
+  width: 42px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.cookie-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.cookie-toggle-slider {
+  position: absolute;
+  inset: 0;
+  background-color: #ccc;
+  border-radius: 24px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.cookie-toggle-slider::before {
+  content: '';
+  position: absolute;
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.cookie-toggle input:checked + .cookie-toggle-slider {
+  background-color: #28a745;
+}
+
+.cookie-toggle input:checked + .cookie-toggle-slider::before {
+  transform: translateX(18px);
+}
+
+.cookie-toggle input:disabled + .cookie-toggle-slider {
+  background-color: #28a745;
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Buttons */
+.cookie-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.cookie-btn {
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.2s, opacity 0.2s;
+}
+
+.cookie-btn--primary {
+  background-color: #28a745;
+  color: #fff;
+}
+
+.cookie-btn--primary:hover {
+  background-color: #218838;
+}
+
+.cookie-btn--outline {
+  background-color: #fff;
+  color: #28a745;
+  border: 2px solid #28a745;
+}
+
+.cookie-btn--outline:hover {
+  background-color: #f0faf3;
+}
+
+.cookie-btn--secondary {
+  background-color: #f0f0f0;
+  color: #444;
+}
+
+.cookie-btn--secondary:hover {
+  background-color: #e0e0e0;
+}

@@ -37,7 +37,7 @@ function getCrumbs(pathname, search, state) {
 function Breadcrumb() {
     const { pathname, search, state } = useLocation();
 
-    if (pathname === '/') return null;
+    if (pathname === '/' || pathname === '/login' || pathname === '/register' || pathname === '/forgot-password' || pathname === '/reset-password' || pathname === '/verify-email') return null;
 
     const crumbs = getCrumbs(pathname, search, state);
 

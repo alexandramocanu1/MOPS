@@ -76,6 +76,11 @@
   border-radius: 2px;
 }
 
+.navbar-container--centered {
+  justify-content: center;
+  gap: 2rem;
+}
+
 .navbar-auth {
   display: flex;
   gap: 1rem;

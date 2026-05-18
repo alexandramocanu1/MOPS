@@ -43,6 +43,7 @@
 .register-label {
   font-weight: 500;
   color: #555;
+  text-align: left;
 }
 
 .register-input,
@@ -129,4 +130,36 @@
   .register-row {
     grid-template-columns: 1fr;
   }
+}
+
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-wrapper .register-input {
+  width: 100%;
+  padding-right: 42px;
+}
+
+.eye-toggle {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: #888;
+  display: flex;
+  align-items: center;
+}
+
+.eye-toggle:hover {
+  color: #333;
+}
+
+.eye-toggle svg {
+  width: 18px;
+  height: 18px;
 }

@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mops.backend.model.User;
+import com.mops.backend.service.EmailService;
 import com.mops.backend.service.UserService;
 
 @RestController
@@ -27,6 +28,9 @@ public class UserController {
     
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private EmailService emailService;
     
     @GetMapping
     public List<User> getAllUsers() {
@@ -58,23 +62,59 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(Map.of("message", "Email already exists"));
         }
-        
+
         User createdUser = userService.createUser(user);
+        String verifyLink = "http://localhost:3000/verify-email?token=" + createdUser.getVerificationToken();
+        emailService.sendVerificationEmail(createdUser.getEmail(), createdUser.getFirstName(), verifyLink);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
-    
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
         String email = credentials.get("email");
         String password = credentials.get("password");
-        
-        Optional<User> user = userService.login(email, password);
-        
-        if (user.isPresent()) {
-            return ResponseEntity.ok(user.get());
-        } else {
+
+        try {
+            Optional<User> user = userService.login(email, password);
+            if (user.isPresent()) {
+                return ResponseEntity.ok(user.get());
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("message", "Invalid email or password"));
+            }
+        } catch (RuntimeException e) {
+            if ("EMAIL_NOT_VERIFIED".equals(e.getMessage())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("message", "EMAIL_NOT_VERIFIED"));
+            }
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("message", "Invalid email or password"));
+        }
+    }
+
+    @GetMapping("/verify")
+    public ResponseEntity<?> verifyAccount(@org.springframework.web.bind.annotation.RequestParam String token) {
+        try {
+            User user = userService.verifyAccount(token);
+            return ResponseEntity.ok(user);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/resend-verification")
+    public ResponseEntity<?> resendVerification(@RequestBody Map<String, String> body) {
+        String email = body.get("email");
+        try {
+            String token = userService.resendVerification(email);
+            String verifyLink = "http://localhost:3000/verify-email?token=" + token;
+            User user = userService.getUserByEmail(email).orElseThrow();
+            emailService.sendVerificationEmail(email, user.getFirstName(), verifyLink);
+            return ResponseEntity.ok(Map.of("message", "Verification email resent"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", e.getMessage()));
         }
     }
     
@@ -92,5 +132,33 @@ public class UserController {
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> body) {
+        String email = body.get("email");
+        String firstName = body.get("firstName");
+        try {
+            String token = userService.initiatePasswordReset(email, firstName);
+            String resetLink = "http://localhost:3000/reset-password?token=" + token;
+            emailService.sendPasswordReset(email, firstName, resetLink);
+            return ResponseEntity.ok(Map.of("message", "Password reset email sent"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> body) {
+        String token = body.get("token");
+        String newPassword = body.get("newPassword");
+        try {
+            User user = userService.confirmPasswordReset(token, newPassword);
+            return ResponseEntity.ok(user);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", e.getMessage()));
+        }
     }
 }

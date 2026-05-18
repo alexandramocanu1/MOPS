@@ -1,85 +1,122 @@
+/*
+ * Type scale (1.250 Major Third):
+ *   12px  — meta labels (card labels)
+ *   14px  — body / table cells
+ *   16px  — section headings
+ *   20px  — modal title
+ *
+ * Line-height: 1.3 for headings, 1.65 for body
+ * Tracking: +0.3px on uppercase labels only
+ * Color ramp: #1a2332 (title) › #2d3748 (body) › #6b7280 (meta)
+ */
+
 .medical-report-viewer {
-    max-width: 900px;
+    max-width: 740px;
     max-height: 90vh;
     overflow-y: auto;
-    background: white;
+    background: #fff;
+    border-radius: 12px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
+/* ── Modal title ──────────────────────────────── */
+.modal-header {
+    padding: 20px 28px;
+    border-bottom: 1px solid #eee;
+}
+
+.modal-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: #1a2332;
+    margin: 0;
+    letter-spacing: -0.3px;
+}
+
+/* ── Report body ──────────────────────────────── */
 .report-content {
-    padding: 20px 30px;
+    padding: 24px 28px 32px;
 }
 
+/* ── Patient info card ────────────────────────── */
 .report-header-info {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 25px;
-    border-radius: 10px;
-    margin-bottom: 25px;
+    background: #f7f6fc;
+    border: 1px solid #e0daf5;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 28px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px 24px;
 }
 
-.info-row {
-    display: flex;
-    gap: 30px;
-    margin-bottom: 15px;
-}
-
-.info-row:last-child {
-    margin-bottom: 0;
-}
-
-.info-item {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
+/* 12px meta label — uppercase, tracked, muted */
 .info-item label {
+    display: block;
     font-size: 12px;
-    opacity: 0.9;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    color: #6b7280;
+    margin-bottom: 3px;
+    line-height: 1.3;
 }
 
+/* 14px value — same weight as body, slightly bolder */
 .info-item span {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: #1a2332;
+}
+
+/* ── Sections ─────────────────────────────────── */
+.report-section {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+/* 16px section heading — one step above body */
+.section-label {
+    width: 140px;
+    min-width: 140px;
     font-size: 16px;
     font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.2px;
+    color: #1a2332;
+    padding-top: 1px;
+    padding-right: 20px;
+    flex-shrink: 0;
+    display: block;
+    border-right: 1px solid #d0cbe8;
 }
 
-.report-section {
-    margin-bottom: 25px;
-    padding: 20px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    border-left: 4px solid #667eea;
-}
-
-.report-section h3 {
-    color: #333;
-    margin-bottom: 12px;
-    font-size: 18px;
-    font-weight: 600;
-}
-
+/* 14px body — comfortable reading line-height */
 .report-section p {
-    color: #555;
-    line-height: 1.6;
+    flex: 1;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.65;
+    color: #2d3748;
     margin: 0;
     white-space: pre-wrap;
 }
 
-.diagnosis-section {
-    background: #fff3cd;
-    border-left-color: #ffc107;
+/* ── Prescriptions ────────────────────────────── */
+.report-section.prescriptions-section {
+    flex-direction: column;
+    gap: 10px;
 }
 
-.diagnosis-section h3 {
-    color: #856404;
-}
-
-.diagnosis-section p {
-    color: #856404;
-    font-weight: 500;
+.report-section.prescriptions-section .section-label {
+    width: auto;
+    border-right: none;
+    padding-right: 0;
+    border-bottom: 1px solid #d0cbe8;
+    padding-bottom: 8px;
 }
 
 .prescriptions-table {
@@ -89,24 +126,43 @@
 .prescriptions-table table {
     width: 100%;
     border-collapse: collapse;
-    background: white;
+    font-size: 14px;
+    border: 1px solid #d0cbe8;
     border-radius: 8px;
     overflow: hidden;
 }
 
+/* 14px table header — same size as body, differentiated by weight + bg */
 .prescriptions-table th {
-    background: #667eea;
-    color: white;
-    padding: 12px;
-    text-align: left;
-    font-weight: 600;
+    background: #7c6bc9;
+    color: #fff;
+    padding: 10px 16px;
+    text-align: center;
     font-size: 14px;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: 0.1px;
+    border-right: 1px solid #9b8ec4;
 }
 
+.prescriptions-table th:last-child {
+    border-right: none;
+}
+
+/* 14px table cell — same as body */
 .prescriptions-table td {
-    padding: 12px;
-    border-bottom: 1px solid #e9ecef;
-    color: #555;
+    padding: 9px 16px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #2d3748;
+    border-right: 1px solid #ece9f7;
+    border-bottom: 1px solid #ece9f7;
+}
+
+.prescriptions-table td:last-child {
+    border-right: none;
 }
 
 .prescriptions-table tr:last-child td {
@@ -114,64 +170,46 @@
 }
 
 .prescriptions-table tbody tr:hover {
-    background: #f8f9fa;
+    background: #faf9ff;
 }
 
-.follow-up-section {
-    background: #d1ecf1;
-    border-left-color: #17a2b8;
-}
-
-.follow-up-section h3 {
-    color: #0c5460;
-}
-
-.follow-up-section p {
-    color: #0c5460;
-}
-
-.follow-up-section strong {
-    color: #0c5460;
-    font-weight: 700;
-}
-
+/* ── Footer ───────────────────────────────────── */
 .report-footer {
     display: flex;
     justify-content: flex-end;
-    gap: 15px;
-    padding: 20px 30px;
-    border-top: 1px solid #e9ecef;
-    background: #f8f9fa;
-}
-
-.btn-close-report,
-.btn-print-report {
-    padding: 12px 24px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.3s ease;
+    gap: 10px;
+    padding: 14px 28px;
+    border-top: 1px solid #eee;
 }
 
 .btn-close-report {
-    background: transparent;
-    color: #666;
-    border: 2px solid #ddd;
+    padding: 9px 22px;
+    border-radius: 7px;
+    border: 1px solid #ddd;
+    background: #fff;
+    color: #374151;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
 }
 
 .btn-close-report:hover {
-    background: #f0f0f0;
-    border-color: #999;
+    background: #f5f5f5;
 }
 
 .btn-print-report {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    padding: 9px 22px;
+    border-radius: 7px;
+    border: none;
+    background: #7c6bc9;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
 }
 
 .btn-print-report:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    background: #6a59b5;
 }
-
