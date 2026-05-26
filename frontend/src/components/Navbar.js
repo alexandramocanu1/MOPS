@@ -44,13 +44,6 @@ function Navbar() {
           Home
         </Link>
         
-        <Link 
-          to="/patient/dashboard" 
-          className={`navbar-link ${location.pathname === '/patient/dashboard' ? 'active' : ''}`}
-        >
-          Dashboard
-        </Link>
-
         <Link
           to="/appointments?view=book"
           className={`navbar-link ${location.pathname === '/appointments' && location.search !== '?view=myappointments' ? 'active' : ''}`}

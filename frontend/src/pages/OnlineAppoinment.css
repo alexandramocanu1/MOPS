@@ -482,20 +482,19 @@
 .appointment-card {
     background: #f8f9fa;
     border-radius: 12px;
-    overflow: hidden;
-    border: 2px solid #e9ecef;
-    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    transition: none !important;
 }
 
 .appointment-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-    border-color: #7c6bc9;
+    transform: none !important;
+    box-shadow: none !important;
+    border-color: transparent !important;
 }
 
 .appointment-header {
-    background: #7c6bc9;
-    padding: 1rem 1.5rem;
+    background: transparent;
+    padding: 20px 20px 0 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -543,7 +542,7 @@
 }
 
 .appointment-body {
-    padding: 1.5rem;
+    padding: 20px;
 }
 
 .appointment-info {
@@ -578,9 +577,7 @@
 }
 
 .appointment-actions {
-    padding: 1rem 1.5rem;
-    background: white;
-    border-top: 2px solid #e9ecef;
+    padding: 15px 0 0 0;
     display: flex;
     justify-content: flex-end;
     gap: 10px;
@@ -588,21 +585,32 @@
 }
 
 .btn-cancel {
-    padding: 0.75rem 1.5rem;
+    padding: 10px 20px;
     background: #dc3545;
     color: white;
     border: none;
     border-radius: 8px;
-    font-size: 1rem;
+    font-size: 14px;
     font-weight: 600;
+    line-height: 1;
     cursor: pointer;
-    transition: all 0.3s ease;
+    box-sizing: border-box;
 }
 
 .btn-cancel:hover {
     background: #c82333;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.my-appointments-section .btn-cancel,
+.my-appointments-section .btn-view-report {
+    padding: 10px 20px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    line-height: 1 !important;
+    border-radius: 8px !important;
+    border: none !important;
+    box-sizing: border-box !important;
+    cursor: pointer !important;
 }
 
 @media (max-width: 1024px) {
@@ -1025,4 +1033,210 @@
         width: 100%;
         justify-content: center;
     }
+}
+
+/* ── Appointment card layout (shared with dashboard) ── */
+.appointment-main-info {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.doctor-info {
+    display: flex;
+    gap: 15px;
+    flex: 1;
+    min-width: 250px;
+}
+
+.doctor-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #7c6bc9;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.doctor-details h3 {
+    margin: 0 0 4px 0;
+    color: #333;
+    font-size: 16px;
+}
+
+.doctor-specialty {
+    color: #7c6bc9;
+    margin: 2px 0;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.doctor-experience {
+    color: #999;
+    margin: 2px 0;
+    font-size: 12px;
+}
+
+.appointment-details {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.detail-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.detail-label {
+    font-size: 11px;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.detail-value {
+    font-size: 13px;
+    color: #333;
+    font-weight: 600;
+}
+
+.appointment-notes {
+    margin-top: 12px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.appointment-notes h4 {
+    margin: 0 0 6px 0;
+    color: #555;
+    font-size: 13px;
+}
+
+.appointment-notes p {
+    margin: 0;
+    color: #555;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* ── Section header with stats ── */
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 25px;
+    gap: 12px;
+}
+
+.dashboard-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+
+.stats-section {
+    display: flex;
+    flex-direction: row !important;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.stat-card {
+    background: #f5f5f5;
+    padding: 0 8px;
+    border-radius: 4px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    white-space: nowrap;
+    transition: none !important;
+    transform: none !important;
+}
+
+.stat-card:hover {
+    transform: none !important;
+}
+
+.stat-card .stat-label {
+    font-size: 12px !important;
+    font-weight: 400 !important;
+    color: #555 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.stat-card .stat-number {
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    color: #555 !important;
+    margin: 0 !important;
+}
+
+.header-controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.tabs {
+    display: flex;
+    gap: 6px;
+    background: #f5f7fa;
+    padding: 4px;
+    border-radius: 10px;
+}
+
+.tab-btn {
+    padding: 6px 12px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    color: #666;
+    white-space: nowrap;
+}
+
+.tab-btn.active {
+    background: white;
+    color: #7c6bc9;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.status-filter {
+    padding: 6px 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    background: white;
+    color: #333;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.btn-view-report {
+    padding: 10px 20px;
+    background: #7c6bc9;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 1;
+    box-sizing: border-box;
 }

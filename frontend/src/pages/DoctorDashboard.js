@@ -14,7 +14,6 @@ function DoctorDashboard() {
     const [doctorInfo, setDoctorInfo] = useState(null);
     const [appointments, setAppointments] = useState([]);
     const [filteredAppointments, setFilteredAppointments] = useState([]);
-    const [availabilities, setAvailabilities] = useState([]);
     const [medicalReports, setMedicalReports] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -85,11 +84,6 @@ function DoctorDashboard() {
             await fetchMedicalReports(appointmentsData);
 
 
-            const availabilitiesResponse = await fetch(`${API_BASE_URL}/availability/doctor/${doctorData.id}`);
-            if (availabilitiesResponse.ok) {
-                const availabilitiesData = await availabilitiesResponse.json();
-                setAvailabilities(availabilitiesData);
-            }
 
             setLoading(false);
         } catch (err) {
@@ -341,15 +335,6 @@ function DoctorDashboard() {
 
     return (
         <div className="doctor-dashboard">
-            <div className="dashboard-header">
-                <div className="header-content">
-                    <div className="doctor-welcome">
-                        <h1>Welcome, Dr. {user?.firstName} {user?.lastName}</h1>
-                        <p className="specialty">{doctorInfo?.specialty?.name}</p>
-                        <p className="experience">{doctorInfo?.experienceYears} years of experience</p>
-                    </div>
-                </div>
-            </div>
 
             {error && (
                 <div className="alert alert-error">
@@ -365,277 +350,217 @@ function DoctorDashboard() {
                 </div>
             )}
 
-            {/* Statistics */}
-            <div className="stats-section">
-                <div className="stat-card stat-upcoming">
-                    <div className="stat-info">
-                        <h3>Upcoming</h3>
-                        <p className="stat-number">{stats.upcoming}</p>
-                    </div>
-                </div>
+            {/* Main appointments section */}
+            <div className="my-appointments-section">
+                <div className="appointments-container">
 
-                <div className="stat-card stat-completed">
-                    <div className="stat-info">
-                        <h3>Completed</h3>
-                        <p className="stat-number">{stats.completed}</p>
-                    </div>
-                </div>
-
-                <div className="stat-card stat-cancelled">
-                    <div className="stat-info">
-                        <h3>Cancelled</h3>
-                        <p className="stat-number">{stats.cancelled}</p>
-                    </div>
-                </div>
-
-                <div className="stat-card stat-total">
-                    <div className="stat-info">
-                        <h3>Total</h3>
-                        <p className="stat-number">{stats.total}</p>
-                    </div>
-                </div>
-            </div>
-
-            {todayAppointments.length > 0 && (
-                <div className="today-section">
-                    <h2>Today's Appointments ({todayAppointments.length})</h2>
-                    <div className="today-appointments">
-                        {todayAppointments.map(appointment => (
-                            <div key={appointment.id} className="today-appointment-card">
-                                <div className="appointment-time">
-                                    <span className="time">{formatTime(appointment.appointmentDate)}</span>
-                                </div>
-                                <div className="appointment-patient">
-                                    <h4>
-                                        {appointment.patient?.firstName} {appointment.patient?.lastName}
-                                    </h4>
-                                    <p>{appointment.notes || 'No notes provided'}</p>
-                                </div>
-                                <span className={`status-badge ${getStatusBadgeClass(appointment.status)}`}>
-                                    {appointment.status}
-                                </span>
+                    <div className="section-header">
+                        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '12px', flexWrap: 'nowrap' }}>
+                            <div>
+                                <p className="dashboard-title" style={{ whiteSpace: 'nowrap' }}>Dashboard</p>
+                                <p className="dd-subtitle">Dr. {user?.firstName} {user?.lastName} · {doctorInfo?.specialty?.name} · {doctorInfo?.experienceYears}y exp.</p>
                             </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            <div className="appointments-section">
-                <div className="section-header">
-                    <h2>Appointments</h2>
-                    <div className="header-controls">
-                        <div className="tabs">
-                            <button
-                                className={`tab-btn ${activeTab === 'upcoming' ? 'active' : ''}`}
-                                onClick={() => setActiveTab('upcoming')}
-                            >
-                                Upcoming
-                            </button>
-                            <button
-                                className={`tab-btn ${activeTab === 'past' ? 'active' : ''}`}
-                                onClick={() => setActiveTab('past')}
-                            >
-                                Past
-                            </button>
-                        </div>
-                        <input
-                            type="text"
-                            placeholder="Search by patient name or ID..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="search-input"
-                        />
-                        <select
-                            value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.target.value)}
-                            className="status-filter"
-                        >
-                            <option value="ALL">All Status</option>
-                            <option value="PENDING">Pending</option>
-                            <option value="CONFIRMED">Confirmed</option>
-                            <option value="COMPLETED">Completed</option>
-                            <option value="CANCELLED">Cancelled</option>
-                            <option value="REJECTED">Rejected</option>
-                        </select>
-                    </div>
-                </div>
-
-                {filteredAppointments.length === 0 ? (
-                    <div className="no-appointments">
-                        <p>No appointments found</p>
-                    </div>
-                ) : (
-                    <div className="appointments-list">
-                        {filteredAppointments.map(appointment => (
-                            <div key={appointment.id} className="appointment-card">
-                                <div className="appointment-header">
-                                    <div className="appointment-id">
-                                        <span>#{appointment.id}</span>
-                                    </div>
-                                    <span className={`status-badge ${getStatusBadgeClass(appointment.status)}`}>
-                                        {appointment.status}
-                                    </span>
+                            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '6px', flexWrap: 'nowrap' }}>
+                                <div className="stat-card">
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#7c6bc9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                    <span className="stat-label">Upcoming</span><span className="stat-number">{stats.upcoming}</span>
                                 </div>
+                                <div className="stat-card">
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#7c6bc9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>
+                                    <span className="stat-label">Completed</span><span className="stat-number">{stats.completed}</span>
+                                </div>
+                                <div className="stat-card">
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#7c6bc9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                                    <span className="stat-label">Cancelled</span><span className="stat-number">{stats.cancelled}</span>
+                                </div>
+                                <div className="stat-card">
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#7c6bc9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                                    <span className="stat-label">Total</span><span className="stat-number">{stats.total}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="header-controls">
+                            <div className="tabs">
+                                <button className={`tab-btn ${activeTab === 'upcoming' ? 'active' : ''}`} onClick={() => setActiveTab('upcoming')}>Upcoming</button>
+                                <button className={`tab-btn ${activeTab === 'past' ? 'active' : ''}`} onClick={() => setActiveTab('past')}>Past</button>
+                            </div>
+                            <input
+                                type="text"
+                                placeholder="Search patient..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="status-filter dd-search"
+                            />
+                            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="status-filter">
+                                <option value="ALL">All Status</option>
+                                <option value="PENDING">Pending</option>
+                                <option value="CONFIRMED">Confirmed</option>
+                                <option value="COMPLETED">Completed</option>
+                                <option value="CANCELLED">Cancelled</option>
+                                <option value="REJECTED">Rejected</option>
+                            </select>
+                        </div>
+                    </div>
 
-                                <div className="appointment-body">
-                                    <div className="appointment-main-info">
-                                        <div className="patient-info">
-                                            <div className="patient-avatar">
-                                                {appointment.patient?.firstName?.charAt(0)}
-                                                {appointment.patient?.lastName?.charAt(0)}
-                                            </div>
-                                            <div className="patient-details">
-                                                <h3>
-                                                    {appointment.patient?.firstName} {appointment.patient?.lastName}
-                                                </h3>
-                                                <p className="patient-contact">{appointment.patient?.email}</p>
-                                                <p className="patient-contact">{appointment.patient?.phoneNumber}</p>
-                                            </div>
-                                        </div>
+                    {todayAppointments.length > 0 && (
+                        <div className="dd-today-banner">
+                            <span className="dd-today-label">Today ({todayAppointments.length})</span>
+                            {todayAppointments.map(apt => (
+                                <span key={apt.id} className="dd-today-item">
+                                    {formatTime(apt.appointmentDate)} — {apt.patient?.firstName} {apt.patient?.lastName}
+                                </span>
+                            ))}
+                        </div>
+                    )}
 
-                                        <div className="appointment-details">
-                                            <div className="detail-item">
-                                                <div className="detail-content">
-                                                    <span className="detail-label">Date</span>
-                                                    <span className="detail-value">{formatDate(appointment.appointmentDate)}</span>
+                    {filteredAppointments.length === 0 ? (
+                        <div className="no-appointments"><p>No appointments found.</p></div>
+                    ) : (
+                        <div className="appointments-list">
+                            {filteredAppointments.map(appointment => (
+                                <div key={appointment.id} className="appointment-card">
+                                    <div className="appointment-header">
+                                        {appointment.status === 'COMPLETED' && !medicalReports[appointment.id] && (
+                                            <span className="status-badge badge-missing-report" style={{ fontSize: '10px' }}>Action Required</span>
+                                        )}
+                                        <span className={`status-badge ${getStatusBadgeClass(appointment.status)}`}>
+                                            {appointment.status}
+                                        </span>
+                                    </div>
+
+                                    <div className="appointment-body">
+                                        <div className="appointment-main-info">
+                                            <div className="doctor-info">
+                                                <div className="doctor-avatar">
+                                                    {appointment.patient?.firstName?.charAt(0)}
+                                                    {appointment.patient?.lastName?.charAt(0)}
+                                                </div>
+                                                <div className="doctor-details">
+                                                    <h3>{appointment.patient?.firstName} {appointment.patient?.lastName}</h3>
+                                                    <p className="doctor-specialty">{appointment.patient?.email}</p>
+                                                    <p className="doctor-experience">{appointment.patient?.phoneNumber}</p>
                                                 </div>
                                             </div>
-                                            <div className="detail-item">
-                                                <div className="detail-content">
-                                                    <span className="detail-label">Time</span>
-                                                    <span className="detail-value">{formatTime(appointment.appointmentDate)}</span>
-                                                </div>
-                                            </div>
-                                            {appointment.cost && (
+                                            <div className="appointment-details">
                                                 <div className="detail-item">
                                                     <div className="detail-content">
-                                                        <span className="detail-label">Cost</span>
-                                                        <span className="detail-value">${appointment.cost}</span>
+                                                        <span className="detail-label">Date</span>
+                                                        <span className="detail-value">{formatDate(appointment.appointmentDate)}</span>
                                                     </div>
                                                 </div>
-                                            )}
+                                                <div className="detail-item">
+                                                    <div className="detail-content">
+                                                        <span className="detail-label">Time</span>
+                                                        <span className="detail-value">{formatTime(appointment.appointmentDate)}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
+
+                                        {appointment.notes && (
+                                            <div className="appointment-notes">
+                                                <h4>Patient Notes:</h4>
+                                                <p>{appointment.notes}</p>
+                                            </div>
+                                        )}
                                     </div>
 
-                                    {appointment.notes && (
-                                        <div className="appointment-notes">
-                                            <h4>Patient Notes:</h4>
-                                            <p>{appointment.notes}</p>
-                                        </div>
-                                    )}
+                                    <div className="appointment-actions">
+                                        {(appointment.status === 'CONFIRMED' || appointment.status === 'PENDING') && (
+                                            <>
+                                                <button onClick={() => handleCompleteAppointment(appointment.id)} className="btn-complete">Complete</button>
+                                                <button onClick={() => handleCancelAppointment(appointment.id)} className="btn-cancel">Cancel</button>
+                                            </>
+                                        )}
+                                        {appointment.status === 'COMPLETED' && (
+                                            <>
+                                                {medicalReports[appointment.id] ? (
+                                                    <>
+                                                        <button onClick={() => handleViewReport(appointment)} className="btn-view-report">View Report</button>
+                                                        <button onClick={() => handleEditReport(appointment)} className="btn-edit-report">Edit Report</button>
+                                                    </>
+                                                ) : (
+                                                    <button onClick={() => handleGenerateReport(appointment)} className="btn-generate-report">Generate Medical Report</button>
+                                                )}
+                                                <button onClick={() => handleMarkAsPending(appointment.id)} className="btn-mark-pending">Mark as Pending</button>
+                                            </>
+                                        )}
+                                    </div>
                                 </div>
-
-                                <div className="appointment-actions">
-                                    {(appointment.status === 'CONFIRMED' || appointment.status === 'PENDING') && (
-                                        <>
-                                            <button
-                                                onClick={() => handleCompleteAppointment(appointment.id)}
-                                                className="btn-complete"
-                                            >
-                                                ✓ Complete
-                                            </button>
-                                            <button
-                                                onClick={() => handleCancelAppointment(appointment.id)}
-                                                className="btn-cancel-appointment"
-                                            >
-                                                Cancel
-                                            </button>
-                                        </>
-                                    )}
-                                    {appointment.status === 'COMPLETED' && (
-                                        <>
-                                            {medicalReports[appointment.id] ? (
-                                                <>
-                                                    <button
-                                                        onClick={() => handleViewReport(appointment)}
-                                                        className="btn-view-report"
-                                                    >
-                                                        View Report
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleEditReport(appointment)}
-                                                        className="btn-edit-report"
-                                                    >
-                                                        Edit Report
-                                                    </button>
-                                                </>
-                                            ) : (
-                                                <button
-                                                    onClick={() => handleGenerateReport(appointment)}
-                                                    className="btn-generate-report"
-                                                >
-                                                    Generate Medical Report
-                                                </button>
-                                            )}
-                                            <button
-                                                onClick={() => handleMarkAsPending(appointment.id)}
-                                                className="btn-mark-pending"
-                                            >
-                                                Mark as Pending
-                                            </button>
-                                        </>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
 
-            <div className="availability-section">
-                <h2>Your Availability</h2>
-                {availabilities.length === 0 ? (
-                    <p className="no-availability">You haven't set your availability yet. Please contact the administrator.</p>
-                ) : (
-                    <div className="availability-grid">
-                        {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((day, index) => {
-                            const dayAvailabilities = availabilities.filter(
-                                a => parseInt(a.dayOfWeek) === index && a.isActive
-                            );
-                            return (
-                                <div key={index} className="availability-day">
-                                    <h4>{day}</h4>
-                                    {dayAvailabilities.length === 0 ? (
-                                        <p className="no-slots">Not available</p>
-                                    ) : (
-                                        <div className="time-slots-list">
-                                            {dayAvailabilities.map((slot, idx) => (
-                                                <div key={idx} className="time-slot-item">
-                                                    {slot.startTime} - {slot.endTime}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                            );
-                        })}
+            {/* Booked hours section */}
+            <div className="my-appointments-section" style={{ marginTop: '24px' }}>
+                <div className="appointments-container">
+                    <div className="section-header" style={{ marginBottom: '16px' }}>
+                        <p className="dashboard-title" style={{ whiteSpace: 'nowrap' }}>Booked Hours</p>
                     </div>
-                )}
+                    {(() => {
+                        const now = new Date();
+                        now.setHours(0, 0, 0, 0);
+                        const booked = appointments
+                            .filter(a => (a.status === 'CONFIRMED' || a.status === 'PENDING') && new Date(a.appointmentDate) >= now)
+                            .sort((a, b) => new Date(a.appointmentDate) - new Date(b.appointmentDate));
+
+                        if (booked.length === 0) {
+                            return <p style={{ color: '#888', fontSize: '14px' }}>No upcoming booked appointments.</p>;
+                        }
+
+                        const byDate = {};
+                        booked.forEach(apt => {
+                            const d = new Date(apt.appointmentDate);
+                            const key = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                            if (!byDate[key]) byDate[key] = [];
+                            byDate[key].push(apt);
+                        });
+
+                        return (
+                            <div className="dd-booked-grid">
+                                {Object.entries(byDate).map(([date, apts]) => (
+                                    <div key={date} className="dd-booked-day">
+                                        <h4 className="dd-booked-date">{date}</h4>
+                                        {apts.map(apt => (
+                                            <div key={apt.id} className="dd-booked-slot">
+                                                <span className="dd-booked-time">{formatTime(apt.appointmentDate)}</span>
+                                                <span className="dd-booked-patient">{apt.patient?.firstName} {apt.patient?.lastName}</span>
+                                                <span className={`status-badge ${getStatusBadgeClass(apt.status)}`} style={{ fontSize: '10px', padding: '2px 6px' }}>{apt.status}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ))}
+                            </div>
+                        );
+                    })()}
+                </div>
             </div>
 
             {showReportGenerator && selectedAppointment && (
-                <MedicalReportGenerator
-                    appointment={selectedAppointment}
-                    existingReport={isEditMode ? selectedReport : null}
-                    isEditMode={isEditMode}
-                    onClose={() => {
-                        setShowReportGenerator(false);
-                        setSelectedAppointment(null);
-                        setSelectedReport(null);
-                        setIsEditMode(false);
-                    }}
-                    onReportCreated={isEditMode ? handleReportUpdated : handleReportCreated}
-                />
+                <div className="modal-overlay">
+                    <div className="modal-content report-modal-container">
+                        <MedicalReportGenerator
+                            appointment={selectedAppointment}
+                            existingReport={isEditMode ? selectedReport : null}
+                            isEditMode={isEditMode}
+                            onClose={() => { setShowReportGenerator(false); setSelectedAppointment(null); setSelectedReport(null); setIsEditMode(false); }}
+                            onReportCreated={isEditMode ? handleReportUpdated : handleReportCreated}
+                        />
+                    </div>
+                </div>
             )}
 
             {showReportViewer && selectedReport && (
-                <MedicalReportViewer
-                    report={selectedReport}
-                    onClose={() => {
-                        setShowReportViewer(false);
-                        setSelectedReport(null);
-                    }}
-                />
+                <div className="modal-overlay">
+                    <div className="modal-content report-modal-container">
+                        <MedicalReportViewer
+                            report={selectedReport}
+                            onClose={() => { setShowReportViewer(false); setSelectedReport(null); }}
+                        />
+                    </div>
+                </div>
             )}
         </div>
     );

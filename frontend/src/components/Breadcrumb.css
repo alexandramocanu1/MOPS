@@ -2,6 +2,9 @@
     background: #f7f3ff;
     border-bottom: 1px solid #e0d5f5;
     padding: 0.55rem 2rem;
+    position: sticky;
+    top: 70px;
+    z-index: 999;
 }
 
 .breadcrumb-list {

@@ -11,8 +11,6 @@ function getCrumbs(pathname, search, state) {
             return [HOME, { label: 'Login' }];
         case '/register':
             return [HOME, { label: 'Register' }];
-        case '/patient/dashboard':
-            return [HOME, { label: 'Dashboard' }];
         case '/doctor/dashboard':
             return [HOME, { label: 'Dashboard' }];
         case '/admin/dashboard':

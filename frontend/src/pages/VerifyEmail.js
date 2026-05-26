@@ -35,7 +35,7 @@ function VerifyEmail() {
             } else if (userData.role === 'ADMIN') {
               navigate('/admin/dashboard');
             } else {
-              navigate('/patient/dashboard');
+              navigate('/appointments?view=myappointments');
             }
           }, 2000);
         } else {

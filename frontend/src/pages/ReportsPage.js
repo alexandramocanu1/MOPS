@@ -11,8 +11,8 @@ import './ReportsPage.css';
 
 function ReportsPage() {
     const printRef = useRef(null);
-
     const currentDate = new Date();
+
     const [reportType, setReportType] = useState('monthly');
     const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
     const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth() + 1);
@@ -45,18 +45,13 @@ function ReportsPage() {
                 isAnnual: reportType === 'annual'
             };
 
-            if (reportType === 'quarterly') {
-                params.months = 3;
-            } else if (reportType === 'semiannual') {
-                params.months = 6;
-            }
+            if (reportType === 'quarterly') params.months = 3;
+            else if (reportType === 'semiannual') params.months = 6;
 
-            const response = await axios.get('http://localhost:7000/api/reports/generate', {
-                params
-            });
+            const response = await axios.get('http://localhost:7000/api/reports/generate', { params });
             setReportData(response.data);
         } catch (err) {
-            setError('Failed to generate report. Please try again.');
+            setError('Failed to generate report parameters. Please ensure your backend engine service is online.');
             console.error('Error generating report:', err);
         } finally {
             setLoading(false);
@@ -65,37 +60,10 @@ function ReportsPage() {
 
     const handlePrint = useReactToPrint({
         contentRef: printRef,
-        documentTitle: `${
-            reportType === 'monthly' ? 'Monthly' :
-            reportType === 'quarterly' ? '3_Months' :
-            reportType === 'semiannual' ? '6_Months' :
-            'Annual'
-        }_Report_${selectedYear}`,
+        documentTitle: `${reportType.toUpperCase()}_Report_${selectedYear}`,
     });
 
-    const getMonthName = (monthNumber) => {
-        return months.find(m => m.value === monthNumber)?.label || '';
-    };
-
-    const CustomTooltip = ({ active, payload }) => {
-        if (active && payload && payload.length) {
-            const data = payload[0].payload;
-            return (
-                <div className="custom-tooltip" style={{
-                    background: '#fff',
-                    padding: '10px',
-                    border: '1px solid #764ba2',
-                    borderRadius: '5px',
-                    boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-                }}>
-                    <p style={{ fontWeight: 'bold', margin: '0 0 5px 0', color: '#333' }}>{data.doctorName}</p>
-                    <p style={{ margin: 0, fontSize: '13px' }}>Patients: {data.uniquePatients}</p>
-                    <p style={{ margin: 0, fontSize: '13px' }}>Appointments: {data.totalAppointments}</p>
-                </div>
-            );
-        }
-        return null;
-    };
+    const getMonthName = (monthNumber) => months.find(m => m.value === monthNumber)?.label || '';
 
     const renderVisualizations = () => {
         if (!reportData) return null;
@@ -112,6 +80,7 @@ function ReportsPage() {
             acc[doc.specialty] = (acc[doc.specialty] || 0) + doc.totalAppointments;
             return acc;
         }, {});
+
         const specialtyData = Object.keys(specialtyMap).map(key => ({
             name: key,
             value: specialtyMap[key]
@@ -128,37 +97,40 @@ function ReportsPage() {
         return (
             <div className="visualizations-wrapper">
                 <div className="view-mode-selector">
-                    <button className={`btn-view ${displayMode === 'summary' ? 'active' : ''}`} onClick={() => setDisplayMode('summary')}>Status</button>
-                    <button className={`btn-view ${displayMode === 'trends' ? 'active' : ''}`} onClick={() => setDisplayMode('trends')}>Trends</button>
-                    <button className={`btn-view ${displayMode === 'comparative' ? 'active' : ''}`} onClick={() => setDisplayMode('comparative')}>Doctors</button>
-                    <button className={`btn-view ${displayMode === 'efficiency' ? 'active' : ''}`} onClick={() => setDisplayMode('efficiency')}>Efficiency</button>
-                    <button className={`btn-view ${displayMode === 'specialties' ? 'active' : ''}`} onClick={() => setDisplayMode('specialties')}>Specialties</button>
+                    {['summary', 'trends', 'comparative', 'efficiency', 'specialties'].map((mode) => (
+                        <button
+                            key={mode}
+                            className={`btn-view ${displayMode === mode ? 'active' : ''}`}
+                            onClick={() => setDisplayMode(mode)}
+                        >
+                            {mode.charAt(0).toUpperCase() + mode.slice(1)}
+                        </button>
+                    ))}
                 </div>
 
                 <div className="chart-display-area">
-
                     {displayMode === 'summary' && (
                         <div className="charts-grid">
                             <div className="chart-card">
                                 <h4>Appointment Distribution</h4>
-                                <ResponsiveContainer width="100%" height={300}>
+                                <ResponsiveContainer width="100%" height={260}>
                                     <PieChart>
-                                        <Pie data={statusData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={70} outerRadius={90} label>
+                                        <Pie data={statusData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={80} label>
                                             {statusData.map((entry, index) => <Cell key={index} fill={entry.color} />)}
                                         </Pie>
                                         <Tooltip />
-                                        <Legend />
+                                        <Legend iconSize={10} />
                                     </PieChart>
                                 </ResponsiveContainer>
                             </div>
                             <div className="chart-card">
                                 <h4>Status Volume Breakdown</h4>
-                                <ResponsiveContainer width="100%" height={300}>
+                                <ResponsiveContainer width="100%" height={260}>
                                     <BarChart data={statusData} layout="vertical">
                                         <XAxis type="number" hide />
-                                        <YAxis dataKey="name" type="category" width={100} />
+                                        <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 12 }} />
                                         <Tooltip cursor={{ fill: 'transparent' }} />
-                                        <Bar dataKey="value" radius={[0, 5, 5, 0]}>
+                                        <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={14}>
                                             {statusData.map((entry, index) => <Cell key={index} fill={entry.color} />)}
                                         </Bar>
                                     </BarChart>
@@ -168,169 +140,125 @@ function ReportsPage() {
                     )}
 
                     {displayMode === 'trends' && (
-                        <div>
+                        <div className="chart-card">
                             <h4>Clinical Activity Density</h4>
-                            <ResponsiveContainer width="100%" height={350}>
+                            <ResponsiveContainer width="100%" height={320}>
                                 <AreaChart data={reportData.doctorStatistics}>
                                     <defs>
                                         <linearGradient id="colorGrad" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#667eea" stopOpacity={0.8} />
-                                            <stop offset="95%" stopColor="#764ba2" stopOpacity={0} />
+                                            <stop offset="5%" stopColor="#7c6bc9" stopOpacity={0.4} />
+                                            <stop offset="95%" stopColor="#5d4ebd" stopOpacity={0} />
                                         </linearGradient>
                                     </defs>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                    <XAxis dataKey="doctorName" />
-                                    <YAxis />
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                                    <XAxis dataKey="doctorName" tick={{ fontSize: 11 }} />
+                                    <YAxis tick={{ fontSize: 11 }} />
                                     <Tooltip />
-                                    <Area type="monotone" dataKey="totalAppointments" stroke="#764ba2" fillOpacity={1} fill="url(#colorGrad)" />
+                                    <Area type="monotone" dataKey="totalAppointments" stroke="#5d4ebd" strokeWidth={2} fill="url(#colorGrad)" />
                                 </AreaChart>
                             </ResponsiveContainer>
                         </div>
                     )}
 
                     {displayMode === 'comparative' && (
-                        <div>
-                            <h4>Doctor Success vs. Cancelation Rates</h4>
-                            <ResponsiveContainer width="100%" height={350}>
+                        <div className="chart-card">
+                            <h4>Doctor Success vs. Cancellation Rates</h4>
+                            <ResponsiveContainer width="100%" height={320}>
                                 <BarChart data={reportData.doctorStatistics}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                    <XAxis dataKey="doctorName" />
-                                    <YAxis />
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                                    <XAxis dataKey="doctorName" tick={{ fontSize: 11 }} />
+                                    <YAxis tick={{ fontSize: 11 }} />
                                     <Tooltip />
-                                    <Legend />
-                                    <Bar dataKey="doctorCompleted" name="Completed" fill="#4caf50" stackId="a" />
+                                    <Legend iconSize={10} />
+                                    <Bar dataKey="doctorCompleted" name="Completed" fill="#4caf50" stackId="a" barSize={25} />
+                                    <Bar dataKey="confirmedAppointments" name="Confirmed" fill="#2196f3" stackId="a" />
                                     <Bar dataKey="cancelledAppointments" name="Cancelled" fill="#ff9800" stackId="a" />
-                                    <Bar dataKey="confirmedAppointments" name="Future/Confirmed" fill="#2196f3" stackId="a" />
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
                     )}
+
                     {displayMode === 'efficiency' && (
                         <div className="charts-grid">
                             <div className="chart-card">
                                 <h4>Top Performer Matrix: {topDoc?.doctorName}</h4>
-                                <ResponsiveContainer width="100%" height={300}>
+                                <ResponsiveContainer width="100%" height={260}>
                                     <RadarChart data={radarData}>
-                                        <PolarGrid />
-                                        <PolarAngleAxis dataKey="subject" />
-                                        <PolarRadiusAxis angle={30} domain={[0, 'auto']} />
-                                        <Radar name="Performance" dataKey="A" stroke="#764ba2" fill="#667eea" fillOpacity={0.6} />
+                                        <PolarGrid stroke="#e2e8f0" />
+                                        <PolarAngleAxis dataKey="subject" tick={{ fontSize: 11 }} />
+                                        <PolarRadiusAxis angle={30} domain={[0, 'auto']} tick={{ fontSize: 10 }} />
+                                        <Radar name="Performance" dataKey="A" stroke="#5d4ebd" fill="#7c6bc9" fillOpacity={0.3} />
                                         <Tooltip />
                                     </RadarChart>
                                 </ResponsiveContainer>
                             </div>
                             <div className="chart-card">
                                 <h4>Patient Loyalty Scatter</h4>
-                                <ResponsiveContainer width="100%" height={300}>
-                                    <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-                                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
-
-                                        <XAxis
-                                            type="number"
-                                            dataKey="uniquePatients"
-                                            name="Patients"
-                                            domain={[0, 'dataMax + 1']}
-                                            nice
-                                        />
-                                        <YAxis
-                                            type="number"
-                                            dataKey="totalAppointments"
-                                            name="Appts"
-                                            domain={[0, 'dataMax + 1']}
-                                            nice
-                                        />
-
-
-                                        <Tooltip content={<CustomTooltip />} cursor={{ strokeDasharray: '3 3' }} />
-
-                                        <Scatter
-                                            name="Doctors"
-                                            data={reportData.doctorStatistics}
-                                            fill="#764ba2"
-                                        />
+                                <ResponsiveContainer width="100%" height={260}>
+                                    <ScatterChart margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                                        <XAxis type="number" dataKey="uniquePatients" name="Patients" tick={{ fontSize: 11 }} />
+                                        <YAxis type="number" dataKey="totalAppointments" name="Appts" tick={{ fontSize: 11 }} />
+                                        <Tooltip cursor={{ strokeDasharray: '3 3' }} />
+                                        <Scatter name="Doctors" data={reportData.doctorStatistics} fill="#7c6bc9" />
                                     </ScatterChart>
                                 </ResponsiveContainer>
                             </div>
                         </div>
                     )}
+
                     {displayMode === 'specialties' && (
-                        <div>
+                        <div className="chart-card">
                             <h4>Departmental Load Distribution</h4>
-                            <ResponsiveContainer width="100%" height={400}>
-                                <Treemap
-                                    data={specialtyData}
-                                    dataKey="value"
-                                    ratio={4 / 3}
-                                    stroke="#fff"
-                                    fill="#667eea"
-                                >
+                            <ResponsiveContainer width="100%" height={350}>
+                                <Treemap data={specialtyData} dataKey="value" ratio={4 / 3} stroke="#fff" fill="#7c6bc9">
                                     <Tooltip />
                                 </Treemap>
                             </ResponsiveContainer>
                         </div>
                     )}
-
                 </div>
             </div>
         );
     };
+
     return (
         <div className="reports-page">
+            <div className="reports-container">
             <div className="reports-header">
                 <h1>Medical Reports Dashboard</h1>
                 <p>Analyze appointment trends and clinical statistics</p>
             </div>
-
-            <div className="reports-container">
+                {/* Connected Configuration Ribbon Card */}
                 <div className="report-controls">
-                    <h2>Report Settings</h2>
-                    <div className="report-type-selector" style={{ marginBottom: '15px' }}>
-                        <button
-                            className={`btn-toggle ${reportType === 'monthly' ? 'active' : ''}`}
-                            onClick={() => setReportType('monthly')}
-                        >Monthly Report</button>
-                        <button
-                            className={`btn-toggle ${reportType === 'quarterly' ? 'active' : ''}`}
-                            onClick={() => setReportType('quarterly')}
-                        >3 Months Report</button>
-                        <button
-                            className={`btn-toggle ${reportType === 'semiannual' ? 'active' : ''}`}
-                            onClick={() => setReportType('semiannual')}
-                        >6 Months Report</button>
-                        <button
-                            className={`btn-toggle ${reportType === 'annual' ? 'active' : ''}`}
-                            onClick={() => setReportType('annual')}
-                        >Annual Report</button>
+                    <h2>Report Configuration</h2>
+
+                    <div className="report-type-selector">
+                        {['monthly', 'quarterly', 'semiannual', 'annual'].map((type) => (
+                            <button
+                                key={type}
+                                className={`btn-toggle ${reportType === type ? 'active' : ''}`}
+                                onClick={() => setReportType(type)}
+                            >
+                                {type === 'monthly' ? 'Monthly' : type === 'quarterly' ? '3 Months' : type === 'semiannual' ? '6 Months' : 'Annual'}
+                            </button>
+                        ))}
                     </div>
 
                     <div className="controls-group">
                         {reportType === 'monthly' && (
                             <div className="control-item">
                                 <label htmlFor="month">Month:</label>
-                                <select
-                                    id="month"
-                                    value={selectedMonth}
-                                    onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-                                    className="control-select"
-                                >
-                                    {months.map(month => (
-                                        <option key={month.value} value={month.value}>{month.label}</option>
-                                    ))}
+                                <select id="month" value={selectedMonth} onChange={(e) => setSelectedMonth(parseInt(e.target.value))} className="control-select">
+                                    {months.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
                                 </select>
                             </div>
                         )}
 
                         <div className="control-item">
                             <label htmlFor="year">Year:</label>
-                            <select
-                                id="year"
-                                value={selectedYear}
-                                onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                                className="control-select"
-                            >
-                                {years.map(year => (
-                                    <option key={year} value={year}>{year}</option>
-                                ))}
+                            <select id="year" value={selectedYear} onChange={(e) => setSelectedYear(parseInt(e.target.value))} className="control-select">
+                                {years.map(y => <option key={y} value={y}>{y}</option>)}
                             </select>
                         </div>
 
@@ -342,23 +270,29 @@ function ReportsPage() {
                             <button onClick={handlePrint} className="btn-download">Download PDF</button>
                         )}
                     </div>
+
+                    {/* Integrated perfectly right inside the config section */}
+                    {!reportData && !loading && (
+                        <div className="no-report">
+                            <p>Configure parameters above and click <strong>Generate Report</strong>.</p>
+                        </div>
+                    )}
                 </div>
 
                 {error && <div className="error-message">{error}</div>}
+
+                {/* Only renders once data is fetched and active */}
                 {reportData && (
                     <div className="report-printable-area" ref={printRef}>
                         <div className="report-title">
                             <h2>
-                                {reportType === 'monthly'
-                                    ? `Monthly Report - ${getMonthName(reportData.month)} ${reportData.year}`
-                                    : reportType === 'quarterly'
-                                    ? `Quarterly Report (3 Months) - ${getMonthName(reportData.month)} to ${getMonthName((reportData.month + 2) % 12 || 12)} ${reportData.year}`
-                                    : reportType === 'semiannual'
-                                    ? `Semi-Annual Report (6 Months) - ${getMonthName(reportData.month)} to ${getMonthName((reportData.month + 5) % 12 || 12)} ${reportData.year}`
-                                    : `Annual Report - ${reportData.year}`}
+                                {reportType === 'monthly' ? `Monthly Report - ${getMonthName(reportData.month)} ${reportData.year}` :
+                                 reportType === 'annual' ? `Annual Report - ${reportData.year}` :
+                                 `Timeline Summary Report - ${reportData.year}`}
                             </h2>
                             <p className="report-date">Generated on: {new Date().toLocaleDateString()}</p>
                         </div>
+
                         {renderVisualizations()}
 
                         <div className="report-section">
@@ -368,15 +302,15 @@ function ReportsPage() {
                                     <div className="stat-number">{reportData.totalAppointments}</div>
                                     <div className="stat-label">Total</div>
                                 </div>
-                                <div className="stat-card confirmed">
+                                <div className="stat-card">
                                     <div className="stat-number">{reportData.confirmedAppointments}</div>
                                     <div className="stat-label">Confirmed</div>
                                 </div>
-                                <div className="stat-card completed">
+                                <div className="stat-card">
                                     <div className="stat-number">{reportData.completedAppointments}</div>
                                     <div className="stat-label">Completed</div>
                                 </div>
-                                <div className="stat-card cancelled">
+                                <div className="stat-card">
                                     <div className="stat-number">{reportData.cancelledAppointments}</div>
                                     <div className="stat-label">Cancelled</div>
                                 </div>
@@ -392,9 +326,9 @@ function ReportsPage() {
                                             <tr>
                                                 <th>Doctor Name</th>
                                                 <th>Specialty</th>
-                                                <th>Total Appts</th>
-                                                <th>Unique Patients</th>
-                                                <th>Completed</th>
+                                                <th className="number-cell">Total Appts</th>
+                                                <th className="number-cell">Unique Patients</th>
+                                                <th className="number-cell">Completed</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -411,15 +345,9 @@ function ReportsPage() {
                                     </table>
                                 </div>
                             ) : (
-                                <p className="no-data">No doctor data available for this selection.</p>
+                                <p style={{ color: 'var(--text-muted)' }}>No doctor data available for this selection.</p>
                             )}
                         </div>
-                    </div>
-                )}
-
-                {!reportData && !loading && (
-                    <div className="no-report">
-                        <p>Configure the parameters above and click <strong>Generate Report</strong>.</p>
                     </div>
                 )}
             </div>

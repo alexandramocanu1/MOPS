@@ -59,7 +59,7 @@ function Login() {
         const userData = await response.json();
         login(userData);
         if (userData.role === 'PATIENT' || userData.role === 'USER') {
-          navigate('/patient/dashboard');
+          navigate('/appointments?view=myappointments');
         } else if (userData.role === 'DOCTOR') {
           navigate('/doctor/dashboard');
         } else if (userData.role === 'ADMIN') {

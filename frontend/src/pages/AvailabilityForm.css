@@ -1,0 +1,280 @@
+.availability-modal-container {
+    max-width: 720px !important;
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.doctor-context-banner {
+    background: #f8f9fa;
+    padding: 1.25rem 2rem;
+    color: #495057;
+    font-size: 1rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.custom-form-padding {
+    padding: 2rem !important;
+}
+
+.custom-margin-bottom {
+    margin-bottom: 2rem !important;
+}
+
+.section-form-label {
+    font-weight: 700 !important;
+    color: #333 !important;
+    font-size: 1.05rem !important;
+    margin-bottom: 0.85rem !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block;
+}
+
+.quick-select-buttons-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.btn-quick-select {
+    background: #f1f3f5;
+    border: 1px solid #ced4da;
+    color: #495057;
+    padding: 0.5rem 1.25rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.btn-quick-select:hover {
+    background: #e9ecef;
+    color: #212529;
+    border-color: #adb5bd;
+}
+
+.btn-clear-select {
+    background: #fff5f5;
+    border-color: #ffe3e3;
+    color: #e63946;
+}
+
+.btn-clear-select:hover {
+    background: #ffe3e3;
+    color: #c1121f;
+    border-color: #ffb7b7;
+}
+
+.preset-btn {
+    background: #edf2ff;
+    border-color: #d0bfff;
+    color: #4c6ef5;
+}
+
+.preset-btn:hover {
+    background: #dbe4ff;
+    border-color: #748ffc;
+}
+
+.days-checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.day-checkbox-card {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    cursor: pointer;
+    user-select: none;
+    background: #ffffff;
+    transition: all 0.25s ease;
+}
+
+.day-checkbox-card:hover {
+    border-color: #667eea;
+    background-color: #f8f9ff;
+}
+
+.day-checkbox-card input[type="checkbox"] {
+    margin-right: 10px;
+    width: 18px;
+    height: 18px;
+    accent-color: #667eea;
+    cursor: pointer;
+}
+
+.day-checkbox-card.checked {
+    border-color: #667eea;
+    background-color: #f3f0ff;
+    font-weight: 700;
+    color: #764ba2;
+}
+
+/* Time slots container updates */
+.time-slots-list-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.time-slot-input-row {
+    display: flex;
+    align-items: flex-end; /* Align inputs, text, and button to the bottom line perfectly */
+    gap: 1rem;
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.time-picker-wrapper {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    gap: 0.35rem;
+}
+
+.time-picker-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: #868e96;
+}
+
+.custom-time-input {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 0.5rem 0.75rem !important;
+    border: 2px solid #ced4da !important;
+    border-radius: 6px !important;
+    font-size: 1rem !important;
+    font-family: inherit !important;
+    height: 42px !important;
+}
+
+/* Fixed 'to' Alignment Rules */
+.time-separator-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 42px; /* Matches input box height */
+    padding: 0 0.25rem;
+}
+
+.time-between-separator {
+    color: #868e96;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+/* Fixed Unclickable 'X' Action Area */
+.delete-action-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 42px; /* Matches input box height */
+}
+
+.btn-delete-slot {
+    background: #ffe3e3 !important;
+    color: #e63946 !important;
+    border: none !important;
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 6px !important;
+    font-size: 0.95rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    pointer-events: auto !important; /* Forces layout to permit interaction pointers */
+    position: relative !important;
+    z-index: 10 !important;
+    transition: all 0.2s ease !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.btn-delete-slot:hover:not(:disabled) {
+    background: #e63946 !important;
+    color: #ffffff !important;
+}
+
+.btn-delete-slot:disabled {
+    opacity: 0.3 !important;
+    cursor: not-allowed !important;
+    background: #e9ecef !important;
+    color: #adb5bd !important;
+}
+
+.btn-add-new-slot {
+    background: transparent;
+    border: 2px dashed #667eea;
+    color: #667eea;
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.btn-add-new-slot:hover {
+    background: #f3f0ff;
+    border-color: #764ba2;
+    color: #764ba2;
+}
+
+.availability-preview-box {
+    background: #f3f0ff;
+    padding: 1.25rem 1.5rem;
+    border-radius: 10px;
+    margin-top: 1.5rem;
+    border-left: 5px solid #764ba2;
+}
+
+.availability-preview-box h4 {
+    margin: 0 0 0.5rem 0;
+    color: #764ba2;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.availability-preview-box p {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.9rem;
+    color: #495057;
+}
+
+.preview-slots-scrollable {
+    margin: 0;
+    padding-left: 1.25rem;
+    max-height: 140px;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.25rem;
+}
+
+.preview-slots-scrollable li {
+    font-size: 0.85rem;
+    color: #495057;
+}
+
+.modal-footer-override {
+    margin-top: 2rem !important;
+    padding-top: 1.25rem !important;
+    border-top: 2px solid #e9ecef !important;
+}

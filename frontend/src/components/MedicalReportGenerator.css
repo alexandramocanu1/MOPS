@@ -197,25 +197,33 @@ textarea.form-control {
     background: #7f8c8d;
 }
 
-.btn-submit {
-    padding: 12px 28px;
-    background: #7c6bc9;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 15px;
-    font-weight: 500;
-    transition: background 0.2s;
+.form-actions .btn-submit {
+    padding: 12px 28px !important;
+    background: #7c6bc9 !important;
+    background-image: none !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    transition: background 0.2s !important;
+    transform: none !important;
+    box-shadow: none !important;
+    width: auto !important;
+    margin-top: 0 !important;
 }
 
-.btn-submit:hover:not(:disabled) {
-    background: #6a59b5;
+.form-actions .btn-submit:hover:not(:disabled) {
+    background: #6a59b5 !important;
+    background-image: none !important;
+    transform: none !important;
 }
 
-.btn-submit:disabled {
-    background: #bdc3c7;
-    cursor: not-allowed;
+.form-actions .btn-submit:disabled {
+    background: #bdc3c7 !important;
+    background-image: none !important;
+    cursor: not-allowed !important;
 }
 
 /* Alert styles */

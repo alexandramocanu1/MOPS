@@ -6,7 +6,6 @@ import './App.css';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import PatientDashboard from './pages/PatientDashboard';
 import OnlineAppoinment from './pages/OnlineAppointment';
 import DoctorDashboard from './pages/DoctorDashboard';
 import AdminDashboard from './pages/AdminDashboard';
@@ -37,7 +36,7 @@ function App() {
             <Route path="/" element={<ProtectedHome />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/patient/dashboard" element={<PatientDashboard />} />
+            <Route path="/patient/dashboard" element={<Navigate to="/appointments?view=myappointments" replace />} />
             <Route path="/appointments" element={<OnlineAppoinment />} />
             <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
